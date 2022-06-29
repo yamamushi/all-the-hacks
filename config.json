@@ -1,0 +1,176 @@
+{
+  "servers": {
+    "nethack": [
+      {
+        "name": "nethack.alt.org (NAO)",
+        "website": "https://alt.org/nethack/",
+        "description": "Vanilla NetHack 3.6.6",
+        "ssh_servers": [
+          "alt.org"
+        ],
+        "ssh_username": "nethack",
+        "ssh_port": 22,
+        "ssh_password": "",
+        "telnet_servers": [
+          "nethack.alt.org"
+        ],
+        "web_clients": ["https://alt.org/nethack/hterm/"],
+        "irc": "#nethack on libera.chat",
+        "discord": "",
+        "locations": [
+          "Virginia, United States"
+        ]
+      },
+      {
+        "name": "hardfought.org (HDF)",
+        "website": "https://www.hardfought.org/nethack/",
+        "description": "Hardfought now hosts an online NetHack server, which offers a couple different versions of the original, or ‘vanilla’ game, as well as a handful of variants.",
+        "ssh_servers": [
+          "hardfought.org",
+          "eu.hardfought.org",
+          "au.hardfought.org"
+        ],
+        "ssh_username": "nethack",
+        "ssh_port": 22,
+        "ssh_password": "",
+        "telnet_servers": [],
+        "web_clients": ["https://www.hardfought.org/nethack/hterm/"],
+        "irc": "#hardfought on libera.chat",
+        "discord": "https://discord.gg/dWMkgHn",
+        "locations": [
+          "Virginia, United States",
+          "London, United Kingdom",
+          "Sydney, Australia"
+        ]
+      },
+      {
+        "name": "em.slashem.me",
+        "website": "https://em.slashem.me/",
+        "description": "Slash'Em and Slash'Em Extended",
+        "ssh_servers": [
+          "slashem.me"
+        ],
+        "ssh_username": "slashem",
+        "ssh_port": 22,
+        "ssh_password": "",
+        "telnet_servers": [],
+        "web_clients": ["https://play.slashem.me/"],
+        "irc": "#em.slashem.me on libera.chat",
+        "discord": "",
+        "locations": [
+          "Falkenstein/Vogtl., Germany"
+        ]
+      },
+      {
+        "name": "guis.es",
+        "website": "https://guis.es/",
+        "description": "UnNetHack",
+        "ssh_servers": [],
+        "ssh_username": "",
+        "ssh_port": 22,
+        "ssh_password": "",
+        "telnet_servers": [
+          "guis.es"
+        ],
+        "web_clients": [],
+        "irc": "",
+        "discord": "",
+        "locations": [
+          "United Kingdom"
+        ]
+      },
+      {
+        "name": "Cafe / Veekun NetHack",
+        "website": "http://nethack.veekun.com/",
+        "description": "NetHack with a custom patchset",
+        "ssh_servers": ["nethack.veekun.com"],
+        "ssh_username": "nethack",
+        "ssh_port": 22,
+        "ssh_password": "nethack",
+        "telnet_servers": [],
+        "web_clients": [],
+        "irc": "#cafe on irc.veekun.com",
+        "discord": "",
+        "locations": [
+          "Dallas, Texas, United States"
+        ]
+      },
+      {
+        "name": "nethack4.org",
+        "website": "http://nethack4.org/",
+        "description": "NetHack 4",
+        "ssh_servers": [],
+        "ssh_username": "",
+        "ssh_port": 22,
+        "ssh_password": "",
+        "telnet_servers": [
+          "nethack4.org"
+        ],
+        "web_clients": [],
+        "irc": "#nethack4 on libera.chat",
+        "discord": "",
+        "locations": [
+          "Boston, Massachusetts, United States"
+        ]
+      },
+      {
+        "name": "Nethack-CN",
+        "website": "http://nethack-cn.com/",
+        "description": "NetHack 3.6 in Chinese and English",
+        "ssh_servers": [
+          "nethack-cn.com"
+        ],
+        "ssh_username": "nethack",
+        "ssh_port": 2222,
+        "ssh_password": "nethack",
+        "telnet_servers": [],
+        "web_clients": [],
+        "irc": "",
+        "discord": "",
+        "locations": [
+          "Chengdu, China"
+        ]
+      },
+      {
+        "name": "NetHack Live",
+        "website": "https://webtiles.nethack.live/",
+        "description": "Web-based tile play support similar to DCSS including mobile",
+        "ssh_servers": [
+          "nethack-cn.com"
+        ],
+        "ssh_username": "nethack",
+        "ssh_port": 2222,
+        "ssh_password": "nethack",
+        "telnet_servers": [],
+        "web_clients": [
+          "https://nethack.live/",
+          "https://us.nethack.live/"
+        ],
+        "irc": "",
+        "discord": "",
+        "locations": [
+          "Gyeonggi-do, South Korea",
+          "Iowa, USA"
+        ]
+      },
+      {
+        "name": "floatingeye.net",
+        "website": "http://www.floatingeye.net/",
+        "description": "NetHack v3.7.0 with custom patchset. Includes consent and dog #petting.",
+        "ssh_servers": [
+          "floatingeye.net"
+        ],
+        "ssh_username": "nethack",
+        "ssh_port": 22,
+        "ssh_password": "",
+        "telnet_servers": [],
+        "web_clients": [],
+        "irc": "",
+        "discord": "",
+        "locations": [
+          "Toronto, Canada"
+        ]
+      }
+    ]
+  }
+}
