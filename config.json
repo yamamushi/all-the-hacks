@@ -15,7 +15,9 @@
           "nethack.alt.org"
         ],
         "telnet_port": 23,
-        "web_clients": ["https://alt.org/nethack/hterm/"],
+        "web_clients": [
+          "https://alt.org/nethack/hterm/"
+        ],
         "irc": "irc.libera.chat/#nethack ",
         "discord": "",
         "locations": [
@@ -36,7 +38,9 @@
         "ssh_password": "",
         "telnet_servers": [],
         "telnet_port": 23,
-        "web_clients": ["https://www.hardfought.org/nethack/hterm/"],
+        "web_clients": [
+          "https://www.hardfought.org/nethack/hterm/"
+        ],
         "irc": "irc.libera.chat/#hardfought",
         "discord": "https://discord.gg/dWMkgHn",
         "locations": [
@@ -57,7 +61,9 @@
         "ssh_password": "",
         "telnet_servers": [],
         "telnet_port": 23,
-        "web_clients": ["https://play.slashem.me/"],
+        "web_clients": [
+          "https://play.slashem.me/"
+        ],
         "irc": "irc.libera.chat/#em.slashem.me ",
         "discord": "",
         "locations": [
@@ -87,7 +93,9 @@
         "name": "Cafe / Veekun NetHack",
         "website": "http://nethack.veekun.com/",
         "description": "NetHack with a custom patchset",
-        "ssh_servers": ["nethack.veekun.com"],
+        "ssh_servers": [
+          "nethack.veekun.com"
+        ],
         "ssh_username": "nethack",
         "ssh_port": 22,
         "ssh_password": "nethack",
