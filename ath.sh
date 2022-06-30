@@ -563,7 +563,7 @@ function DisplayInstallInformationMenu() {
     GAME_MAINTAINER_URL=$(jq -r ".games.nethack_variants[] | select(.name==\"${GAME_NAME}\") | .maintainer_url" "$ATH_DIR"/config.json)
     # If GAME_MAINTAINER_URL is not blank, then add it to MANAGE_GAME_MENU_TEXT
     if [ -n "$GAME_MAINTAINER_URL" ]; then
-      MANAGE_GAME_MENU_TEXT="$MANAGE_GAME_MENU_TEXT - $GAME_MAINTAINER_URL"
+      MANAGE_GAME_MENU_TEXT="$MANAGE_GAME_MENU_TEXT\nMaintainer's Site: $GAME_MAINTAINER_URL"
     fi
   fi
 
@@ -613,7 +613,7 @@ function DisplayInstallInformationMenu() {
   # If GAME_MAINTAINER_URL is not blank, then add it to MANAGE_GAME_MENU_OPTIONS
   if [ -n "$GAME_MAINTAINER_URL" ]; then
     local MAINTAINER_URL_MENU_OPTION
-    NumberToLetter "$j" MAINTAINER_URL_MENU_OPTION
+    NumberToLetter $j MAINTAINER_URL_MENU_OPTION
     ((j++))
     MANAGE_GAME_MENU_OPTIONS[$i]="$MAINTAINER_URL_MENU_OPTION"
     MANAGE_GAME_MENU_OPTIONS[$i + 1]="maintainer $GAME_MAINTAINER_URL"
@@ -633,6 +633,58 @@ function DisplayInstallInformationMenu() {
   exitStatus=$?
   exec 3>&-
   clear
+
+  for i in "${!MANAGE_GAME_MENU_OPTIONS[@]}"; do
+    if [[ "${MANAGE_GAME_MENU_OPTIONS[$i]}" = "${MANAGE_GAME_MENU_CHOICE}" ]]; then
+      local OPTION_SELECTION="${MANAGE_GAME_MENU_OPTIONS[$i + 1]}"
+      # If option selection begins with "website", then it is the website option
+      if [[ "$OPTION_SELECTION" = "website"* ]]; then
+        # Remove "website" from the selection
+        local WEBSITE_URL
+        WEBSITE_URL="${OPTION_SELECTION#*website }"
+        $URL_OPENER "$WEBSITE_URL"
+        DisplayInstallInformationMenu "$GAME_NAME"
+        exitStatus=$?
+      # If option selection begins with "wiki", then it is the wiki entry option
+      elif [[ "$OPTION_SELECTION" = "wiki"* ]]; then
+        # Remove "wiki" from the selection
+        local WIKI_URL
+        WIKI_URL="${OPTION_SELECTION#*wiki }"
+        $URL_OPENER "$WIKI_URL"
+        DisplayInstallInformationMenu "$GAME_NAME"
+        exitStatus=$?
+      # If option selection begins with "maintainer", then it is the maintainer option
+      elif [[ "$OPTION_SELECTION" = "maintainer"* ]]; then
+        # Remove "maintainer" from the selection
+        local MAINTAINER_URL
+        MAINTAINER_URL="${OPTION_SELECTION#*maintainer }"
+        $URL_OPENER "$MAINTAINER_URL"
+        DisplayInstallInformationMenu "$GAME_NAME"
+        exitStatus=$?
+      # If option selection begins with "github", then it is the github option
+      elif [[ "$OPTION_SELECTION" = "github"* ]]; then
+        local GITHUB_URL
+        # Remove "github" from the selection
+        GITHUB_URL="${OPTION_SELECTION#*github }"
+        $URL_OPENER "$GITHUB_URL"
+        DisplayInstallInformationMenu "$GAME_NAME"
+        exitStatus=$?
+      # If option selection begins with "install", then it is the install option
+      elif [[ "$OPTION_SELECTION" = "Install"* ]]; then
+        echo "Install Unimplemented"
+      # If option selection begins with "update", then it is the update option
+      elif [[ "$OPTION_SELECTION" = "Update"* ]]; then
+        echo "Update Unimplemented"
+      # If option selection begins with "remove", then it is the remove option
+      elif [[ "$OPTION_SELECTION" = "Remove"* ]]; then
+        echo "Remove Unimplemented"
+      # If option selection contains "exports", then it is the export option
+      elif [[ "$OPTION_SELECTION" = "Setup Exports"* ]]; then
+        echo "Setup Exports Unimplemented"
+      fi
+
+    fi
+  done
 
   return $exitStatus
 }
