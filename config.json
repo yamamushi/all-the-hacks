@@ -204,20 +204,6 @@
   "games": {
     "nethack-variants": [
       {
-        "name": "",
-        "description": "",
-        "website": "",
-        "variant_type": "",
-        "github_page": "",
-        "git_repository": "",
-        "git_branch": "",
-        "git_commit": "",
-        "maintainer": "",
-        "maintainer_url": "",
-        "nethack_wiki_entry": "",
-        "development_status": ""
-      },
-      {
         "name": "Nethack 3.6",
         "description": "Nethack-3.6 latest stable release (3.6.6)",
         "website": "",
@@ -482,20 +468,6 @@
         "maintainer_url": "https://nethackwiki.com/wiki/User:Ais523",
         "nethack_wiki_entry": "https://nethackwiki.com/wiki/AceHack",
         "development_status": "Unmaintained"
-      },
-      {
-        "name": "",
-        "description": "",
-        "website": "",
-        "variant_type": "",
-        "github_page": "",
-        "git_repository": "",
-        "git_branch": "",
-        "git_commit": "",
-        "maintainer": "",
-        "maintainer_url": "",
-        "nethack_wiki_entry": "",
-        "development_status": ""
       },
       {
         "name": "DynaHack",
