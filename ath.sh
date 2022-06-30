@@ -14,11 +14,8 @@ MISSING_DEPENDENCIES=""
 # -h <help>
 function ParseCommandLineOptions() {
   local OPTION
-  while getopts "c:d:h" OPTION; do
+  while getopts "d:h" OPTION; do
       case $OPTION in
-          c)
-              ATH_CONFIG_FILE=$OPTARG
-              ;;
           d)
               ATH_DIR=$OPTARG
               ;;
@@ -55,7 +52,7 @@ function SetupPackageManager() {
   # If linux, we need to determine the distro to determine the package manager
     if type lsb_release >/dev/null 2>&1; then
         # If OS == Ubuntu, we use apt-get
-        if [ $OS == 'Ubuntu' ]; then
+        if [ "$OS" == 'Ubuntu' ]; then
           PACKAGE_MANAGER='apt-get'
         fi
     elif [ -f /etc/lsb-release ]; then
@@ -141,20 +138,20 @@ function SetupDependencyList() {
 # Check to see if all the dependencies are installed, and if not, prompt to install
 function InstallDependencies() {
   # If MISSING_DEPENDENCIES is not empty, we need to install the missing dependencies
-  if [[ ! -z $MISSING_DEPENDENCIES ]]; then
+  if [[ -n $MISSING_DEPENDENCIES ]]; then
     echo "Missing Dependencies: $MISSING_DEPENDENCIES"
     echo "Would you like to install them now? (y/n)"
     read -r REPLY
     if [[ $REPLY =~ ^[Yy]$ ]]; then
       if [[ $PACKAGE_MANAGER == 'apt-get' ]]; then
         # If package installation fails we exit with a message to the user
-        sudo apt-get install $MISSING_DEPENDENCIES || { echo "Error: Unable to install dependencies. Please check the above errors and try again."; exit 1; }
+        sudo apt-get install "$MISSING_DEPENDENCIES" || { echo "Error: Unable to install dependencies. Please check the above errors and try again."; exit 1; }
       elif [[ $PACKAGE_MANAGER == 'apt' ]]; then
-        sudo apt install $MISSING_DEPENDENCIES || { echo "Error: Unable to install dependencies. Please check the above errors and try again."; exit 1; }
+        sudo apt install "$MISSING_DEPENDENCIES" || { echo "Error: Unable to install dependencies. Please check the above errors and try again."; exit 1; }
       elif [[ $PACKAGE_MANAGER == 'yum' ]]; then
-        sudo yum install $MISSING_DEPENDENCIES || { echo "Error: Unable to install dependencies. Please check the above errors and try again."; exit 1; }
+        sudo yum install "$MISSING_DEPENDENCIES" || { echo "Error: Unable to install dependencies. Please check the above errors and try again."; exit 1; }
       elif [[ $PACKAGE_MANAGER == 'brew' ]]; then
-        brew install $MISSING_DEPENDENCIES || { echo "Error: Unable to install dependencies. Please check the above errors and try again."; exit 1; }
+        brew install "$MISSING_DEPENDENCIES" || { echo "Error: Unable to install dependencies. Please check the above errors and try again."; exit 1; }
     fi
     else
       echo "Please install the missing dependencies and try again."
@@ -216,16 +213,8 @@ function SetupInstallation() {
 function NumberToLetter() {
   local __resultvar=$2
   local __number=$1
-  local __letter=$(echo -n $__number | awk '{printf "%c", 65+$1}')
+  local __letter=$(echo -n "$__number" | awk '{printf "%c", 65+$1}')
   eval $__resultvar="$__letter"
-}
-
-# Takes a letter argument and converts to a number starting at A = 0, B = 1, C = 2, etc to Z = 25
-function LetterToNumber() {
-  local __resultvar=$2
-  local __letter=$1
-  local __number=$(printf '%d\n' "'$__letter")
-  eval $__resultvar="$__number"
 }
 
 function RemotePlay() {
@@ -236,6 +225,8 @@ function RemotePlay() {
 
   # For every line from jq on the remote play list output .servers.nethack[].name, add it to the array indexed by an ascending letter
   declare -a REMOTE_PLAY_OPTIONS
+  local j
+  local i
   i=0 #Index counter for adding to array
   j=0 #Option menu value generator
 
@@ -263,14 +254,11 @@ function RemotePlay() {
 
   clear
 
-  j=0 # We already defined this above
   for i in "${!REMOTE_PLAY_OPTIONS[@]}"; do
     if [[ "${REMOTE_PLAY_OPTIONS[$i]}" = "${REMOTE_PLAY_CHOICE}" ]]; then
-      #echo "${REMOTE_PLAY_OPTIONS[$i+1]}"
       description=$(jq -r ".servers.nethack[] | select(.name==\"${REMOTE_PLAY_OPTIONS[$i+1]}\") | .description" ~/allthehacks/config.json)
-      echo $description
+      echo "$description"
     fi
-    (( j++ ))
   done
 
   return $exitStatus
