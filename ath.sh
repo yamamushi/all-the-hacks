@@ -3,7 +3,7 @@
 # Global Vars
 DIALOG_TITLE="All The Hacks"
 ATH_DIR="$HOME/allthehacks/"
-DEFAULT_CONFIG_URL="https://raw.githubusercontent.com/yamamushi/allthehacks/master/config.json"
+DEFAULT_CONFIG_URL="https://raw.githubusercontent.com/yamamushi/all-the-hacks/master/config.json"
 PACKAGE_MANAGER='unknown'
 PLATFORM='unknown'
 MISSING_DEPENDENCIES=""
@@ -34,7 +34,9 @@ function ParseCommandLineOptions() {
   done
 }
 
-# Pre-Setup Checks
+####################
+# Pre-Setup Checks #
+####################
 
 # Determine OS
 function CheckOSType() {
@@ -129,6 +131,11 @@ function SetupDependencyList() {
     MISSING_DEPENDENCIES="$MISSING_DEPENDENCIES curl"
   fi
 
+  # Check to see if dialog is installed
+  if ! [ -x "$(command -v dialog)" ]; then
+    # append dialog to MISSING_DEPENDENCIES
+    MISSING_DEPENDENCIES="$MISSING_DEPENDENCIES dialog"
+  fi
 }
 
 # Check to see if all the dependencies are installed, and if not, prompt to install
@@ -161,8 +168,7 @@ function InstallDependencies() {
 function RetrieveDefaultConfig() {
   # If the config file does not exist, we need to download it
   if [[ ! -f "$ATH_DIR/config.json" ]]; then
-    echo "Downloading default config file..."
-    curl -v -s -o "$ATH_DIR/config.json" "$ATH_CONFIG_FILE_URL" || { echo "Error: Unable to download config file. Please check your internet connection and try again."; exit 1; }
+    curl -s -o "$ATH_DIR/config.json" "$DEFAULT_CONFIG_URL" || { echo "Error: Unable to download config file. Please check your internet connection and try again."; exit 1; }
   fi
 }
 
@@ -187,8 +193,6 @@ function CheckForAthDir() {
   eval $__resultvar="nonewinstall" # Return 1 to indicate that the directory exists, but we did not check for a config
 }
 
-
-
 # Setup our installation directory and configuration if they don't exist
 function SetupInstallation() {
   local SETUP_STATUS
@@ -208,24 +212,43 @@ function SetupInstallation() {
   fi
 }
 
+# Takes a number argument and returns a letter starting at 0 = A, 1 = B, 2 = C, etc to 25 = Z
+function NumberToLetter() {
+  local __resultvar=$2
+  local __number=$1
+  local __letter=$(echo -n $__number | awk '{printf "%c", 65+$1}')
+  eval $__resultvar="$__letter"
+}
+
+# Takes a letter argument and converts to a number starting at A = 0, B = 1, C = 2, etc to Z = 25
+function LetterToNumber() {
+  local __resultvar=$2
+  local __letter=$1
+  local __number=$(printf '%d\n' "'$__letter")
+  eval $__resultvar="$__number"
+}
 
 function RemotePlay() {
   local HEIGHT=17
   local WIDTH=40
   local CHOICE_HEIGHT=10
 
-  REMOTE_PLAY_OPTIONS=(
-    A "nethack.alt.org"
-    B "Hardfought.org"
-    C "em.slashem.me"
-    D "guis.es"
-    E "Cafe/Veekun"
-    F "nethack4.org"
-    G "games.libreplanet.org"
-    F "Nethack-CN"
-    G "Nethack Live"
-    H "floatingeye.net"
-  )
+
+  # For every line from jq on the remote play list output .servers.nethack[].name, add it to the array indexed by an ascending letter
+  declare -a REMOTE_PLAY_OPTIONS
+  i=0 #Index counter for adding to array
+  j=0 #Option menu value generator
+
+
+  while IFS= read -r line # Read a line
+  do
+    local letter
+    NumberToLetter $j letter
+    REMOTE_PLAY_OPTIONS[ $i ]=$letter
+    (( j++ ))
+    REMOTE_PLAY_OPTIONS[ ($i + 1) ]=$line
+    (( i=(i+2) ))
+  done < <(jq -r '.servers.nethack[].name' < "$ATH_DIR/config.json")
 
   exec 3>&1;
   REMOTE_PLAY_CHOICE=$(dialog --clear \
@@ -239,32 +262,17 @@ function RemotePlay() {
   exec 3>&-;
 
   clear
-  case $REMOTE_PLAY_OPTIONS in
-          A)
-              echo "nethack.alt.org"
-              ;;
-          B)
-              echo "Hardfought.org"
-              ;;
-          C)
-              echo "em.slashem.me"
-              ;;
-          D)
-              echo "guis.es"
-              ;;
-          E)
-              echo "Cafe/Veekun"
-              ;;
-          F)
-              echo "nethack4.org"
-              ;;
-          G)
-              echo "games.libreplanet.org"
-              ;;
-          H)
-              echo "floatingeye.net"
-              ;;
-  esac
+
+  j=0 # We already defined this above
+  for i in "${!REMOTE_PLAY_OPTIONS[@]}"; do
+    if [[ "${REMOTE_PLAY_OPTIONS[$i]}" = "${REMOTE_PLAY_CHOICE}" ]]; then
+      #echo "${REMOTE_PLAY_OPTIONS[$i+1]}"
+      description=$(jq -r ".servers.nethack[] | select(.name==\"${REMOTE_PLAY_OPTIONS[$i+1]}\") | .description" ~/allthehacks/config.json)
+      echo $description
+    fi
+    (( j++ ))
+  done
+
   return $exitStatus
 }
 
@@ -306,21 +314,21 @@ function MainMenu(){
   esac
 }
 
+
+###########
+# Runtime #
+###########
+
 # Parse the CLI for a directory flag
 ParseCommandLineOptions "$@"
 # Check our OS type
-echo "Checking OS"
 CheckOSType
 # Set up our Package manager vars
-echo "Setting up package manager"
 SetupPackageManager
 # Set up our list of missing dependencies, if there are any
-echo "Checking for missing dependencies"
 SetupDependencyList
 # Install the dependencies if necessary
-echo "Installing missing dependencies"
 InstallDependencies
 # Set up our installation if necessary
-echo "Setting up installation"
 SetupInstallation
 MainMenu
