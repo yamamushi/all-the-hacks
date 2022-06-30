@@ -244,9 +244,9 @@ function NumberToLetter() {
 # Accepts a server name as an argument, and that is how they are indexed by jq going forward
 function DisplayServerMenu() {
   local SERVER_NAME=$1
-  local HEIGHT=20
+  local HEIGHT=24
   local WIDTH=80
-  local CHOICE_HEIGHT=14
+  local CHOICE_HEIGHT=18
   local j
   local i
   declare -a SERVER_MENU_OPTIONS
@@ -281,6 +281,27 @@ function DisplayServerMenu() {
   if [[ ! -z $SERVER_DISCORD ]]; then
     SERVER_DESCRIPTION="$SERVER_DESCRIPTION\nDiscord: $SERVER_DISCORD"
   fi
+
+  # Get locations and append them to the description
+  local SERVER_LOCATIONS
+  while IFS= read -r line # Read a line
+  do
+    # If line is not empty, add it to the description
+    if [[ ! -z $line ]]; then
+      # If SERVER_LOCATIONS is empty, add the first location to it
+      if [[ -z $SERVER_LOCATIONS ]]; then
+        SERVER_LOCATIONS="$line"
+      else
+        SERVER_LOCATIONS="$SERVER_LOCATIONS | $line"
+      fi
+    fi
+  done < <(jq -r ".servers.nethack[] | select(.name==\"${SERVER_NAME}\") | .locations | .[] " $ATH_DIR/config.json)
+
+  # If SERVER_LOCATIONS is not empty, add it to the description
+  if [[ -n $SERVER_LOCATIONS ]]; then
+    SERVER_DESCRIPTION="$SERVER_DESCRIPTION\nLocations: $SERVER_LOCATIONS"
+  fi
+
 
 
   # Build SERVER_MENU_OPTIONS array with ssh servers first
@@ -325,6 +346,14 @@ function DisplayServerMenu() {
 
   # Add server IRC and Discord to the list of options
   local letter
+  # If SERVER_WEBSITE is not empty, add it to the menu
+  if [[ -n $SERVER_WEBSITE ]]; then
+    NumberToLetter "$j" letter
+    SERVER_MENU_OPTIONS[ $i ]=$letter
+    (( j++ ))
+    SERVER_MENU_OPTIONS[ ($i + 1) ]="website $SERVER_WEBSITE"
+    (( i=(i+2) ))
+  fi
   # If SERVER_IRC is not empty, add it to the menu
   if [[ -n $SERVER_IRC ]]; then
     NumberToLetter "$j" letter
@@ -333,8 +362,6 @@ function DisplayServerMenu() {
     SERVER_MENU_OPTIONS[ ($i + 1) ]="irc $SERVER_IRC"
     (( i=(i+2) ))
   fi
-
-
   # If SERVER_DISCORD is not empty, add it to the menu
   if [[ -n $SERVER_DISCORD ]]; then
     NumberToLetter "$j" letter
@@ -406,6 +433,13 @@ function DisplayServerMenu() {
         $URL_OPENER "$DISCORD_SERVER_URL" 2>&1
         DisplayServerMenu "$SERVER_NAME"
         exitStatus=$?
+      # If server selection contains "website", then it is a website
+      elif [[ "$SERVER_SELECTION" = *"website"* ]]; then
+        # Remove "website" from the selection
+        local WEBSITE_URL="${SERVER_SELECTION#*website }"
+        $URL_OPENER "$WEBSITE_URL" 2>&1
+        DisplayServerMenu "$SERVER_NAME"
+        exitStatus=$?
       fi
 
     fi
@@ -415,7 +449,7 @@ function DisplayServerMenu() {
 }
 
 function DisplayRemotePlayMenu() {
-  local HEIGHT=17
+  local HEIGHT=18
   local WIDTH=40
   local CHOICE_HEIGHT=10
   local j
