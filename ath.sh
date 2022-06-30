@@ -16,19 +16,19 @@ URL_OPENER='unknown'
 function ParseCommandLineOptions() {
   local OPTION
   while getopts "d:h" OPTION; do
-      case $OPTION in
-          d)
-              ATH_DIR=$OPTARG
-              ;;
-          h)
-              echo "Usage: ath.sh [-c <config file>]"
-              exit 0
-              ;;
-          *)
-              echo "Unrecognized option: $OPTARG, try -h for help"
-              exit 1
-              ;;
-      esac
+    case $OPTION in
+    d)
+      ATH_DIR=$OPTARG
+      ;;
+    h)
+      echo "Usage: ath.sh [-c <config file>]"
+      exit 0
+      ;;
+    *)
+      echo "Unrecognized option: $OPTARG, try -h for help"
+      exit 1
+      ;;
+    esac
   done
 }
 
@@ -41,31 +41,31 @@ function CheckOSType() {
   local UNAME_STRING
   UNAME_STRING=$(uname)
   if [[ "$UNAME_STRING" == 'Linux' ]]; then
-     PLATFORM='linux'
+    PLATFORM='linux'
   elif [[ "$UNAME_STRING" == 'Darwin' ]]; then
-     PLATFORM='osx'
+    PLATFORM='osx'
   fi
 }
 
 # Setup Package Manager (apt-get, yum, etc)
 function SetupPackageManager() {
   if [[ $PLATFORM == 'linux' ]]; then
-  # If linux, we need to determine the distro to determine the package manager
+    # If linux, we need to determine the distro to determine the package manager
     if type lsb_release >/dev/null 2>&1; then
-        # If OS == Ubuntu, we use apt-get
-        if [ "$OS" == 'Ubuntu' ]; then
-          PACKAGE_MANAGER='apt-get'
-        fi
+      # If OS == Ubuntu, we use apt-get
+      if [ "$OS" == 'Ubuntu' ]; then
+        PACKAGE_MANAGER='apt-get'
+      fi
     elif [ -f /etc/lsb-release ]; then
-        # For some versions of Debian/Ubuntu without lsb_release command
-        PACKAGE_MANAGER='apt'
+      # For some versions of Debian/Ubuntu without lsb_release command
+      PACKAGE_MANAGER='apt'
     elif [ -f /etc/debian_version ]; then
-        # Older Debian/Ubuntu/etc.
-        PACKAGE_MANAGER='apt'
+      # Older Debian/Ubuntu/etc.
+      PACKAGE_MANAGER='apt'
     elif [ -f /etc/redhat-release ]; then
-        PACKAGE_MANAGER='yum'
+      PACKAGE_MANAGER='yum'
     else
-        PACKAGE_MANAGER='unknown'
+      PACKAGE_MANAGER='unknown'
     fi
   elif [[ $PLATFORM == 'osx' ]]; then
     # Check to see if command line tools are installed, if not prompt to install
@@ -157,14 +157,26 @@ function InstallDependencies() {
     if [[ $REPLY =~ ^[Yy]$ ]]; then
       if [[ $PACKAGE_MANAGER == 'apt-get' ]]; then
         # If package installation fails we exit with a message to the user
-        sudo apt-get install "$MISSING_DEPENDENCIES" || { echo "Error: Unable to install dependencies. Please check the above errors and try again."; exit 1; }
+        sudo apt-get install "$MISSING_DEPENDENCIES" || {
+          echo "Error: Unable to install dependencies. Please check the above errors and try again."
+          exit 1
+        }
       elif [[ $PACKAGE_MANAGER == 'apt' ]]; then
-        sudo apt install "$MISSING_DEPENDENCIES" || { echo "Error: Unable to install dependencies. Please check the above errors and try again."; exit 1; }
+        sudo apt install "$MISSING_DEPENDENCIES" || {
+          echo "Error: Unable to install dependencies. Please check the above errors and try again."
+          exit 1
+        }
       elif [[ $PACKAGE_MANAGER == 'yum' ]]; then
-        sudo yum install "$MISSING_DEPENDENCIES" || { echo "Error: Unable to install dependencies. Please check the above errors and try again."; exit 1; }
+        sudo yum install "$MISSING_DEPENDENCIES" || {
+          echo "Error: Unable to install dependencies. Please check the above errors and try again."
+          exit 1
+        }
       elif [[ $PACKAGE_MANAGER == 'brew' ]]; then
-        brew install "$MISSING_DEPENDENCIES" || { echo "Error: Unable to install dependencies. Please check the above errors and try again."; exit 1; }
-    fi
+        brew install "$MISSING_DEPENDENCIES" || {
+          echo "Error: Unable to install dependencies. Please check the above errors and try again."
+          exit 1
+        }
+      fi
     else
       echo "Please install the missing dependencies and try again."
       exit 1
@@ -177,13 +189,16 @@ function InstallDependencies() {
 function RetrieveDefaultConfig() {
   # If the config file does not exist, we need to download it
   if [[ ! -f "$ATH_DIR/config.json" ]]; then
-    curl -s -o "$ATH_DIR/config.json" "$DEFAULT_CONFIG_URL" || { echo "Error: Unable to download config file. Please check your internet connection and try again."; exit 1; }
+    curl -s -o "$ATH_DIR/config.json" "$DEFAULT_CONFIG_URL" || {
+      echo "Error: Unable to download config file. Please check your internet connection and try again."
+      exit 1
+    }
   fi
 }
 
 function CheckForAthDir() {
-  local  __resultvar=$1
-   # Check to see if .allthehacks directory is present, and if not, prompt whether to create it
+  local __resultvar=$1
+  # Check to see if .allthehacks directory is present, and if not, prompt whether to create it
   if [ ! -d "$ATH_DIR" ]; then
 
     # Ask user if they want to create the directory
@@ -242,7 +257,7 @@ function NumberToLetter() {
 # Displays a dialog with information about a selected server, and a menu to connect to a
 #   selected ssh_server or telnet_server
 # Accepts a server name as an argument, and that is how they are indexed by jq going forward
-function DisplayServerMenu() {
+function DisplayNethackServerMenu() {
   local SERVER_NAME=$1
   local HEIGHT=24
   local WIDTH=80
@@ -284,8 +299,7 @@ function DisplayServerMenu() {
 
   # Get locations and append them to the description
   local SERVER_LOCATIONS
-  while IFS= read -r line # Read a line
-  do
+  while IFS= read -r line; do # Read a line
     # If line is not empty, add it to the description
     if [[ ! -z $line ]]; then
       # If SERVER_LOCATIONS is empty, add the first location to it
@@ -302,46 +316,41 @@ function DisplayServerMenu() {
     SERVER_DESCRIPTION="$SERVER_DESCRIPTION\nLocations: $SERVER_LOCATIONS"
   fi
 
-
-
   # Build SERVER_MENU_OPTIONS array with ssh servers first
-  i=0 #Index counter for adding to array
-  j=0 #Option menu value generator
-  while IFS= read -r line # Read a line
-  do
+  i=0                         #Index counter for adding to array
+  j=0                         #Option menu value generator
+  while IFS= read -r line; do # Read a line
     local letter
     NumberToLetter $j letter
-    SERVER_MENU_OPTIONS[ $i ]=$letter
-    (( j++ ))
+    SERVER_MENU_OPTIONS[$i]=$letter
+    ((j++))
     # If SERVER_SSH_PASSWORD is not empty, add it to the description
     if [[ ! -z $SERVER_SSH_PASSWORD ]]; then
       SERVER_DESCRIPTION="$SERVER_DESCRIPTION\nSSH Password: $SERVER_SSH_PASSWORD"
     fi
-      SERVER_MENU_OPTIONS[ ($i + 1) ]="ssh $SERVER_SSH_USERNAME@$line"
-    (( i++ ))
-    (( i=(i+2) ))
+    SERVER_MENU_OPTIONS[($i + 1)]="ssh $SERVER_SSH_USERNAME@$line"
+    ((i++))
+    ((i = (i + 2)))
   done < <(jq -r ".servers.nethack[] | select(.name==\"${SERVER_NAME}\") | .ssh_servers | .[]" < "$ATH_DIR/config.json")
 
   # Add telnet servers to list of options
-  while IFS= read -r line # Read a line
-  do
+  while IFS= read -r line; do # Read a line
     local letter
     NumberToLetter "$j" letter
-    SERVER_MENU_OPTIONS[ $i ]=$letter
-    (( j++ ))
-    SERVER_MENU_OPTIONS[ ($i + 1) ]="telnet $line"
-    (( i=(i+2) ))
+    SERVER_MENU_OPTIONS[$i]=$letter
+    ((j++))
+    SERVER_MENU_OPTIONS[($i + 1)]="telnet $line"
+    ((i = (i + 2)))
   done < <(jq -r ".servers.nethack[] | select(.name==\"${SERVER_NAME}\") | .telnet_servers | .[]" < "$ATH_DIR/config.json")
 
   # Add web clients to the list of options
-  while IFS= read -r line # Read a line
-  do
+  while IFS= read -r line; do # Read a line
     local letter
     NumberToLetter $j letter
-    SERVER_MENU_OPTIONS[ $i ]=$letter
-    (( j++ ))
-    SERVER_MENU_OPTIONS[ ($i + 1) ]="web-client $line"
-    (( i=(i+2) ))
+    SERVER_MENU_OPTIONS[$i]=$letter
+    ((j++))
+    SERVER_MENU_OPTIONS[($i + 1)]="web-client $line"
+    ((i = (i + 2)))
   done < <(jq -r ".servers.nethack[] | select(.name==\"${SERVER_NAME}\") | .web_clients | .[]" < "$ATH_DIR/config.json")
 
   # Add server IRC and Discord to the list of options
@@ -349,32 +358,30 @@ function DisplayServerMenu() {
   # If SERVER_WEBSITE is not empty, add it to the menu
   if [[ -n $SERVER_WEBSITE ]]; then
     NumberToLetter "$j" letter
-    SERVER_MENU_OPTIONS[ $i ]=$letter
-    (( j++ ))
-    SERVER_MENU_OPTIONS[ ($i + 1) ]="website $SERVER_WEBSITE"
-    (( i=(i+2) ))
+    SERVER_MENU_OPTIONS[$i]=$letter
+    ((j++))
+    SERVER_MENU_OPTIONS[($i + 1)]="website $SERVER_WEBSITE"
+    ((i = (i + 2)))
   fi
   # If SERVER_IRC is not empty, add it to the menu
   if [[ -n $SERVER_IRC ]]; then
     NumberToLetter "$j" letter
-    SERVER_MENU_OPTIONS[ $i ]=$letter
-    (( j++ ))
-    SERVER_MENU_OPTIONS[ ($i + 1) ]="irc $SERVER_IRC"
-    (( i=(i+2) ))
+    SERVER_MENU_OPTIONS[$i]=$letter
+    ((j++))
+    SERVER_MENU_OPTIONS[($i + 1)]="irc $SERVER_IRC"
+    ((i = (i + 2)))
   fi
   # If SERVER_DISCORD is not empty, add it to the menu
   if [[ -n $SERVER_DISCORD ]]; then
     NumberToLetter "$j" letter
-    SERVER_MENU_OPTIONS[ $i ]=$letter
-    (( j++ ))
-    SERVER_MENU_OPTIONS[ ($i + 1) ]="discord $SERVER_DISCORD"
-    (( i=(i+2) ))
+    SERVER_MENU_OPTIONS[$i]=$letter
+    ((j++))
+    SERVER_MENU_OPTIONS[($i + 1)]="discord $SERVER_DISCORD"
+    ((i = (i + 2)))
   fi
 
-
   # loop over SERVER_MENU_OPTIONS and display them
-  for i in "${SERVER_MENU_OPTIONS[@]}"
-  do
+  for i in "${SERVER_MENU_OPTIONS[@]}"; do
     echo "$i"
   done
 
@@ -394,7 +401,7 @@ function DisplayServerMenu() {
 
   for i in "${!SERVER_MENU_OPTIONS[@]}"; do
     if [[ "${SERVER_MENU_OPTIONS[$i]}" = "${SERVER_MENU_CHOICE}" ]]; then
-      local SERVER_SELECTION="${SERVER_MENU_OPTIONS[$i+1]}"
+      local SERVER_SELECTION="${SERVER_MENU_OPTIONS[$i + 1]}"
       local SSH_SERVER_NAME
       local TELNET_SERVER_NAME
       local WEB_CLIENT_URL
@@ -403,42 +410,42 @@ function DisplayServerMenu() {
         # Remove "ssh" from the selection
         SSH_SERVER_NAME="${SERVER_SELECTION#*ssh }"
         ssh -t "$SSH_SERVER_NAME" -p"$SERVER_SSH_PORT" 2>&1
-        DisplayServerMenu "$SERVER_NAME"
+        DisplayNethackServerMenu "$SERVER_NAME"
         exitStatus=$?
       # If server selection contains "telnet", then it is a telnet server
       elif [[ "$SERVER_SELECTION" = *"telnet"* ]]; then
         # Remove "telnet" from the selection
         TELNET_SERVER_NAME="${SERVER_SELECTION#*telnet }"
         telnet "$TELNET_SERVER_NAME" "$TELNET_SERVER_PORT" 2>&1
-        DisplayServerMenu "$SERVER_NAME"
+        DisplayNethackServerMenu "$SERVER_NAME"
         exitStatus=$?
       # If server selection contains "web-client", then it is a web client
       elif [[ "$SERVER_SELECTION" = *"web-client"* ]]; then
         # Remove "web-client" from the selection
         WEB_CLIENT_URL="${SERVER_SELECTION#*web-client }"
         $URL_OPENER "$WEB_CLIENT_URL" 2>&1
-        DisplayServerMenu "$SERVER_NAME"
+        DisplayNethackServerMenu "$SERVER_NAME"
         exitStatus=$?
       # If server selection contains "irc", then it is an IRC server
       elif [[ "$SERVER_SELECTION" = *"irc"* ]]; then
         # Remove "irc" from the selection
         local IRC_SERVER_NAME="${SERVER_SELECTION#*irc }"
         $URL_OPENER "irc://$IRC_SERVER_NAME" 2>&1
-        DisplayServerMenu "$SERVER_NAME"
+        DisplayNethackServerMenu "$SERVER_NAME"
         exitStatus=$?
       # If server selection contains "discord", then it is a Discord server
       elif [[ "$SERVER_SELECTION" = *"discord"* ]]; then
         # Remove "discord" from the selection
         local DISCORD_SERVER_URL="${SERVER_SELECTION#*discord }"
         $URL_OPENER "$DISCORD_SERVER_URL" 2>&1
-        DisplayServerMenu "$SERVER_NAME"
+        DisplayNethackServerMenu "$SERVER_NAME"
         exitStatus=$?
       # If server selection contains "website", then it is a website
       elif [[ "$SERVER_SELECTION" = *"website"* ]]; then
         # Remove "website" from the selection
         local WEBSITE_URL="${SERVER_SELECTION#*website }"
         $URL_OPENER "$WEBSITE_URL" 2>&1
-        DisplayServerMenu "$SERVER_NAME"
+        DisplayNethackServerMenu "$SERVER_NAME"
         exitStatus=$?
       fi
 
@@ -448,7 +455,8 @@ function DisplayServerMenu() {
   return $exitStatus
 }
 
-function DisplayRemotePlayMenu() {
+# Displays a dialog with a list of all servers from the config file
+function DisplayNethackRemotePlayMenu() {
   local HEIGHT=18
   local WIDTH=40
   local CHOICE_HEIGHT=10
@@ -456,39 +464,38 @@ function DisplayRemotePlayMenu() {
   local i
   declare -a REMOTE_PLAY_OPTIONS
 
-  i=0 #Index counter for adding to array
-  j=0 #Option menu value generator
-  while IFS= read -r line # Read a line
-  do
+  i=0                         #Index counter for adding to array
+  j=0                         #Option menu value generator
+  while IFS= read -r line; do # Read a line
     local letter
     NumberToLetter $j letter
-    REMOTE_PLAY_OPTIONS[ $i ]=$letter
-    (( j++ ))
-    REMOTE_PLAY_OPTIONS[ ($i + 1) ]=$line
-    (( i=(i+2) ))
+    REMOTE_PLAY_OPTIONS[$i]=$letter
+    ((j++))
+    REMOTE_PLAY_OPTIONS[($i + 1)]=$line
+    ((i = (i + 2)))
   done < <(jq -r '.servers.nethack[].name' < "$ATH_DIR/config.json")
 
-  exec 3>&1;
+  exec 3>&1
   local REMOTE_PLAY_CHOICE
   REMOTE_PLAY_CHOICE=$(dialog --clear \
-                  --backtitle "$DIALOG_TITLE" \
-                  --title "$TITLE" \
-                  --cancel-label "Back" \
-                  --menu "Public Nethack Servers" \
-                  $HEIGHT $WIDTH $CHOICE_HEIGHT \
-                  "${REMOTE_PLAY_OPTIONS[@]}" \
-                  2>&1 1>&3)
+    --backtitle "$DIALOG_TITLE" \
+    --title "$TITLE" \
+    --cancel-label "Back" \
+    --menu "Public Nethack Servers" \
+    $HEIGHT $WIDTH $CHOICE_HEIGHT \
+    "${REMOTE_PLAY_OPTIONS[@]}" \
+    2>&1 1>&3)
   local exitStatus=$?
-  exec 3>&-;
+  exec 3>&-
   clear
 
   for i in "${!REMOTE_PLAY_OPTIONS[@]}"; do
     if [[ "${REMOTE_PLAY_OPTIONS[$i]}" = "${REMOTE_PLAY_CHOICE}" ]]; then
-      local SERVER_NAME="${REMOTE_PLAY_OPTIONS[$i+1]}"
-      DisplayServerMenu "$SERVER_NAME"
+      local SERVER_NAME="${REMOTE_PLAY_OPTIONS[$i + 1]}"
+      DisplayNethackServerMenu "$SERVER_NAME"
       local res=$?
       if [ "$res" -eq 1 ]; then
-        DisplayRemotePlayMenu
+        DisplayNethackRemotePlayMenu
         exitStatus=$?
       fi
     fi
@@ -497,44 +504,109 @@ function DisplayRemotePlayMenu() {
   return $exitStatus
 }
 
-function DisplayMainMenu(){
-  local HEIGHT=10
+function DisplayInstallInformationMenu() {
+  local GAME_NAME="$1"
+  echo $GAME_NAME
+  sleep 1
+  return 1
+}
+
+# Displays a dialog with a list of all variants from the config file
+function DisplayNethackInstallManagementMenu() {
+  local HEIGHT=18
+  local WIDTH=40
+  local CHOICE_HEIGHT=10
+  local j
+  local i
+  declare -a INSTALL_MANAGEMENT_OPTIONS
+
+  i=0                         #Index counter for adding to array
+  j=0                         #Option menu value generator
+  while IFS= read -r line; do # Read a line
+    local letter
+    NumberToLetter $j letter
+    INSTALL_MANAGEMENT_OPTIONS[$i]=$letter
+    ((j++))
+    INSTALL_MANAGEMENT_OPTIONS[($i + 1)]=$line
+    ((i = (i + 2)))
+  done < <(jq -r '.games.nethack_variants[].name' < "$ATH_DIR/config.json")
+
+  exec 3>&1
+  local INSTALL_MANAGEMENT_CHOICE
+  INSTALL_MANAGEMENT_CHOICE=$(dialog --clear \
+    --backtitle "$DIALOG_TITLE" \
+    --title "$TITLE" \
+    --cancel-label "Back" \
+    --menu "Manage Nethack Installations" \
+    $HEIGHT $WIDTH $CHOICE_HEIGHT \
+    "${INSTALL_MANAGEMENT_OPTIONS[@]}" \
+    2>&1 1>&3)
+  local exitStatus=$?
+  exec 3>&-
+  clear
+
+  for i in "${!INSTALL_MANAGEMENT_OPTIONS[@]}"; do
+    if [[ "${INSTALL_MANAGEMENT_OPTIONS[$i]}" = "${INSTALL_MANAGEMENT_CHOICE}" ]]; then
+      local GAME_NAME="${INSTALL_MANAGEMENT_OPTIONS[$i + 1]}"
+      DisplayInstallInformationMenu "$GAME_NAME"
+      local res=$?
+      if [ "$res" -eq 1 ]; then
+        DisplayNethackInstallManagementMenu
+        exitStatus=$?
+      fi
+    fi
+  done
+
+  return $exitStatus
+}
+
+function DisplayMainMenu() {
+  local HEIGHT=11
   local WIDTH=40
   local CHOICE_HEIGHT=4
 
   MAIN_MENU_OPTIONS=(
-    A "Remote Play"
-    B "Manage Installs"
+    A "Local Play"
+    B "Remote Play"
+    C "Manage Installs"
     Q "Quit"
   )
 
+  local MAIN_MENU_CHOICE
   MAIN_MENU_CHOICE=$(dialog --clear \
-                  --backtitle "$DIALOG_TITLE" \
-                  --title "$TITLE" \
-                  --cancel-label "Quit" \
-                  --menu "Main Menu" \
-                  $HEIGHT $WIDTH $CHOICE_HEIGHT \
-                  "${MAIN_MENU_OPTIONS[@]}" \
-                  2>&1 >/dev/tty)
+    --backtitle "$DIALOG_TITLE" \
+    --title "$TITLE" \
+    --cancel-label "Quit" \
+    --menu "Main Menu" $HEIGHT $WIDTH $CHOICE_HEIGHT \
+    "${MAIN_MENU_OPTIONS[@]}" \
+    2>&1 >/dev/tty)
   clear
+
   case $MAIN_MENU_CHOICE in
-          A)
-              DisplayRemotePlayMenu
-              local res=$?
-              if [ "$res" -eq 1 ]; then
-                unset MAIN_MENU_CHOICE
-                DisplayMainMenu
-              fi
-              ;;
-          B)
-              echo "You chose Option 2"
-              ;;
-          Q)
-              exit 0
-              ;;
+  A)
+    echo "Unimplemented"
+    sleep 1
+    DisplayMainMenu
+    ;;
+  B)
+    DisplayNethackRemotePlayMenu
+    local res=$?
+    if [ "$res" -eq 1 ]; then
+      DisplayMainMenu
+    fi
+    ;;
+  C)
+    DisplayNethackInstallManagementMenu
+    local res=$?
+    if [ "$res" -eq 1 ]; then
+      DisplayMainMenu
+    fi
+    ;;
+  Q)
+    exit 0
+    ;;
   esac
 }
-
 
 ###########
 # Runtime #

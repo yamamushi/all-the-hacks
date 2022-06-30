@@ -18,7 +18,7 @@
         "web_clients": [
           "https://alt.org/nethack/hterm/"
         ],
-        "irc": "irc.libera.chat/#nethack ",
+        "irc": "irc.libera.chat/#nethack",
         "discord": "",
         "locations": [
           "Virginia, United States"
@@ -64,7 +64,7 @@
         "web_clients": [
           "https://play.slashem.me/"
         ],
-        "irc": "irc.libera.chat/#em.slashem.me ",
+        "irc": "irc.libera.chat/#em.slashem.me",
         "discord": "",
         "locations": [
           "Falkenstein/Vogtl., Germany"
@@ -210,7 +210,7 @@
     ]
   },
   "games": {
-    "nethack-variants": [
+    "nethack_variants": [
       {
         "name": "Nethack 3.6",
         "description": "Nethack-3.6 latest stable release (3.6.6)",
