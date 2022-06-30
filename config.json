@@ -14,8 +14,9 @@
         "telnet_servers": [
           "nethack.alt.org"
         ],
+        "telnet_port": 23,
         "web_clients": ["https://alt.org/nethack/hterm/"],
-        "irc": "#nethack on libera.chat",
+        "irc": "irc.libera.chat/#nethack ",
         "discord": "",
         "locations": [
           "Virginia, United States"
@@ -34,8 +35,9 @@
         "ssh_port": 22,
         "ssh_password": "",
         "telnet_servers": [],
+        "telnet_port": 23,
         "web_clients": ["https://www.hardfought.org/nethack/hterm/"],
-        "irc": "#hardfought on libera.chat",
+        "irc": "irc.libera.chat/#hardfought",
         "discord": "https://discord.gg/dWMkgHn",
         "locations": [
           "Virginia, United States",
@@ -54,8 +56,9 @@
         "ssh_port": 22,
         "ssh_password": "",
         "telnet_servers": [],
+        "telnet_port": 23,
         "web_clients": ["https://play.slashem.me/"],
-        "irc": "#em.slashem.me on libera.chat",
+        "irc": "irc.libera.chat/#em.slashem.me ",
         "discord": "",
         "locations": [
           "Falkenstein/Vogtl., Germany"
@@ -72,6 +75,7 @@
         "telnet_servers": [
           "guis.es"
         ],
+        "telnet_port": 23,
         "web_clients": [],
         "irc": "",
         "discord": "",
@@ -88,8 +92,9 @@
         "ssh_port": 22,
         "ssh_password": "nethack",
         "telnet_servers": [],
+        "telnet_port": 23,
         "web_clients": [],
-        "irc": "#cafe on irc.veekun.com",
+        "irc": "irc.veekun.com/#cafe",
         "discord": "",
         "locations": [
           "Dallas, Texas, United States"
@@ -106,8 +111,28 @@
         "telnet_servers": [
           "nethack4.org"
         ],
+        "telnet_port": 23,
         "web_clients": [],
-        "irc": "#nethack4 on libera.chat",
+        "irc": "irc.libera.chat/#nethack4",
+        "discord": "",
+        "locations": [
+          "Bissen, Luxembourg"
+        ]
+      },
+      {
+        "name": "games.libreplanet.org",
+        "website": "http://games.libreplanet.org/",
+        "description": "NetHack",
+        "ssh_servers": [],
+        "ssh_username": "",
+        "ssh_port": 22,
+        "ssh_password": "",
+        "telnet_servers": [
+          "games.libreplanet.org"
+        ],
+        "telnet_port": 23,
+        "web_clients": [],
+        "irc": "irc.libera.chat/#libreplanet",
         "discord": "",
         "locations": [
           "Boston, Massachusetts, United States"
@@ -124,6 +149,7 @@
         "ssh_port": 2222,
         "ssh_password": "nethack",
         "telnet_servers": [],
+        "telnet_port": 23,
         "web_clients": [],
         "irc": "",
         "discord": "",
@@ -142,6 +168,7 @@
         "ssh_port": 2222,
         "ssh_password": "nethack",
         "telnet_servers": [],
+        "telnet_port": 23,
         "web_clients": [
           "https://nethack.live/",
           "https://us.nethack.live/"
@@ -164,6 +191,7 @@
         "ssh_port": 22,
         "ssh_password": "",
         "telnet_servers": [],
+        "telnet_port": 23,
         "web_clients": [],
         "irc": "",
         "discord": "",

@@ -7,6 +7,7 @@ DEFAULT_CONFIG_URL="https://raw.githubusercontent.com/yamamushi/all-the-hacks/ma
 PACKAGE_MANAGER='unknown'
 PLATFORM='unknown'
 MISSING_DEPENDENCIES=""
+URL_OPENER='unknown'
 
 # Parse command line options
 # -c <config file> (default is $HOME/allthehacks/config.json)
@@ -133,6 +134,17 @@ function SetupDependencyList() {
     # append dialog to MISSING_DEPENDENCIES
     MISSING_DEPENDENCIES="$MISSING_DEPENDENCIES dialog"
   fi
+
+  # If platform is osx set URL_OPENER to open command, otherwise check for xdg-open command if linux
+  if [[ $PLATFORM == 'osx' ]]; then
+    URL_OPENER="open"
+  else
+    if ! [ -x "$(command -v xdg-open)" ]; then
+      MISSING_DEPENDENCIES="$MISSING_DEPENDENCIES xdg-open"
+    else
+      URL_OPENER="xdg-open"
+    fi
+  fi
 }
 
 # Check to see if all the dependencies are installed, and if not, prompt to install
@@ -217,20 +229,191 @@ function NumberToLetter() {
   eval $__resultvar="$__letter"
 }
 
-function RemotePlay() {
+# Displays a dialog with information about a selected server, and a menu to connect to a
+#   selected ssh_server or telnet_server
+# Accepts a server name as an argument, and that is how they are indexed by jq going forward
+function DisplayServerMenu() {
+  local SERVER_NAME=$1
+  local HEIGHT=20
+  local WIDTH=80
+  local CHOICE_HEIGHT=14
+  local j
+  local i
+  declare -a SERVER_MENU_OPTIONS
+
+  local SERVER_DESCRIPTION
+  SERVER_DESCRIPTION=$(jq -r ".servers.nethack[] | select(.name==\"${SERVER_NAME}\") | .description" $ATH_DIR/config.json)
+  local SERVER_WEBSITE
+  SERVER_WEBSITE=$(jq -r ".servers.nethack[] | select(.name==\"${SERVER_NAME}\") | .website" $ATH_DIR/config.json)
+  local SERVER_IRC
+  SERVER_IRC=$(jq -r ".servers.nethack[] | select(.name==\"${SERVER_NAME}\") | .irc" $ATH_DIR/config.json)
+  local SERVER_DISCORD
+  SERVER_DISCORD=$(jq -r ".servers.nethack[] | select(.name==\"${SERVER_NAME}\") | .discord" $ATH_DIR/config.json)
+  local SERVER_SSH_USERNAME
+  SERVER_SSH_USERNAME=$(jq -r ".servers.nethack[] | select(.name==\"${SERVER_NAME}\") | .ssh_username" $ATH_DIR/config.json)
+  local SERVER_SSH_PORT
+  SERVER_SSH_PORT=$(jq -r ".servers.nethack[] | select(.name==\"${SERVER_NAME}\") | .ssh_port" $ATH_DIR/config.json)
+  local SERVER_SSH_PASSWORD
+  SERVER_SSH_PASSWORD=$(jq -r ".servers.nethack[] | select(.name==\"${SERVER_NAME}\") | .ssh_password" $ATH_DIR/config.json)
+  local TELNET_SERVER_PORT
+  TELNET_SERVER_PORT=$(jq -r ".servers.nethack[] | select(.name==\"${SERVER_NAME}\") | .telnet_port" $ATH_DIR/config.json)
+
+  SERVER_DESCRIPTION="$SERVER_DESCRIPTION\n"
+  # If SERVER_WEBSITE is not empty, add it to the description
+  if [[ ! -z $SERVER_WEBSITE ]]; then
+    SERVER_DESCRIPTION="$SERVER_DESCRIPTION\nWebsite: $SERVER_WEBSITE"
+  fi
+  # If SERVER_IRC is not empty, add it to the description
+  if [[ ! -z $SERVER_IRC ]]; then
+    SERVER_DESCRIPTION="$SERVER_DESCRIPTION\nIRC: $SERVER_IRC"
+  fi
+  # If SERVER_DISCORD is not empty, add it to the description
+  if [[ ! -z $SERVER_DISCORD ]]; then
+    SERVER_DESCRIPTION="$SERVER_DESCRIPTION\nDiscord: $SERVER_DISCORD"
+  fi
+
+
+  # Build SERVER_MENU_OPTIONS array with ssh servers first
+  i=0 #Index counter for adding to array
+  j=0 #Option menu value generator
+  while IFS= read -r line # Read a line
+  do
+    local letter
+    NumberToLetter $j letter
+    SERVER_MENU_OPTIONS[ $i ]=$letter
+    (( j++ ))
+    # If SERVER_SSH_PASSWORD is not empty, add it to the description
+    if [[ ! -z $SERVER_SSH_PASSWORD ]]; then
+      SERVER_DESCRIPTION="$SERVER_DESCRIPTION\nSSH Password: $SERVER_SSH_PASSWORD"
+    fi
+      SERVER_MENU_OPTIONS[ ($i + 1) ]="ssh $SERVER_SSH_USERNAME@$line"
+    (( i++ ))
+    (( i=(i+2) ))
+  done < <(jq -r ".servers.nethack[] | select(.name==\"${SERVER_NAME}\") | .ssh_servers | .[]" < "$ATH_DIR/config.json")
+
+  # Add telnet servers to list of options
+  while IFS= read -r line # Read a line
+  do
+    local letter
+    NumberToLetter "$j" letter
+    SERVER_MENU_OPTIONS[ $i ]=$letter
+    (( j++ ))
+    SERVER_MENU_OPTIONS[ ($i + 1) ]="telnet $line"
+    (( i=(i+2) ))
+  done < <(jq -r ".servers.nethack[] | select(.name==\"${SERVER_NAME}\") | .telnet_servers | .[]" < "$ATH_DIR/config.json")
+
+  # Add web clients to the list of options
+  while IFS= read -r line # Read a line
+  do
+    local letter
+    NumberToLetter $j letter
+    SERVER_MENU_OPTIONS[ $i ]=$letter
+    (( j++ ))
+    SERVER_MENU_OPTIONS[ ($i + 1) ]="web-client $line"
+    (( i=(i+2) ))
+  done < <(jq -r ".servers.nethack[] | select(.name==\"${SERVER_NAME}\") | .web_clients | .[]" < "$ATH_DIR/config.json")
+
+  # Add server IRC and Discord to the list of options
+  local letter
+  # If SERVER_IRC is not empty, add it to the menu
+  if [[ -n $SERVER_IRC ]]; then
+    NumberToLetter "$j" letter
+    SERVER_MENU_OPTIONS[ $i ]=$letter
+    (( j++ ))
+    SERVER_MENU_OPTIONS[ ($i + 1) ]="irc $SERVER_IRC"
+    (( i=(i+2) ))
+  fi
+
+
+  # If SERVER_DISCORD is not empty, add it to the menu
+  if [[ -n $SERVER_DISCORD ]]; then
+    NumberToLetter "$j" letter
+    SERVER_MENU_OPTIONS[ $i ]=$letter
+    (( j++ ))
+    SERVER_MENU_OPTIONS[ ($i + 1) ]="discord $SERVER_DISCORD"
+    (( i=(i+2) ))
+  fi
+
+
+  # loop over SERVER_MENU_OPTIONS and display them
+  for i in "${SERVER_MENU_OPTIONS[@]}"
+  do
+    echo "$i"
+  done
+
+  exec 3>&1
+  local SERVER_MENU_CHOICE
+  SERVER_MENU_CHOICE=$(dialog \
+    --backtitle "System Information" \
+    --title "$SERVER_NAME" \
+    --clear \
+    --cancel-label "Back" \
+    --menu "$SERVER_DESCRIPTION" $HEIGHT $WIDTH $CHOICE_HEIGHT \
+    "${SERVER_MENU_OPTIONS[@]}" \
+    2>&1 1>&3)
+  exitStatus=$?
+  exec 3>&-
+  clear
+
+  for i in "${!SERVER_MENU_OPTIONS[@]}"; do
+    if [[ "${SERVER_MENU_OPTIONS[$i]}" = "${SERVER_MENU_CHOICE}" ]]; then
+      local SERVER_SELECTION="${SERVER_MENU_OPTIONS[$i+1]}"
+      local SSH_SERVER_NAME
+      local TELNET_SERVER_NAME
+      local WEB_CLIENT_URL
+      # If server selection contains "ssh", then it is an ssh server
+      if [[ "$SERVER_SELECTION" = *"ssh"* ]]; then
+        # Remove "ssh" from the selection
+        SSH_SERVER_NAME="${SERVER_SELECTION#*ssh }"
+        ssh -t "$SSH_SERVER_NAME" -p"$SERVER_SSH_PORT" 2>&1
+        DisplayServerMenu "$SERVER_NAME"
+        exitStatus=$?
+      # If server selection contains "telnet", then it is a telnet server
+      elif [[ "$SERVER_SELECTION" = *"telnet"* ]]; then
+        # Remove "telnet" from the selection
+        TELNET_SERVER_NAME="${SERVER_SELECTION#*telnet }"
+        telnet "$TELNET_SERVER_NAME" "$TELNET_SERVER_PORT" 2>&1
+        DisplayServerMenu "$SERVER_NAME"
+        exitStatus=$?
+      # If server selection contains "web-client", then it is a web client
+      elif [[ "$SERVER_SELECTION" = *"web-client"* ]]; then
+        # Remove "web-client" from the selection
+        WEB_CLIENT_URL="${SERVER_SELECTION#*web-client }"
+        $URL_OPENER "$WEB_CLIENT_URL" 2>&1
+        DisplayServerMenu "$SERVER_NAME"
+        exitStatus=$?
+      # If server selection contains "irc", then it is an IRC server
+      elif [[ "$SERVER_SELECTION" = *"irc"* ]]; then
+        # Remove "irc" from the selection
+        local IRC_SERVER_NAME="${SERVER_SELECTION#*irc }"
+        $URL_OPENER "irc://$IRC_SERVER_NAME" 2>&1
+        DisplayServerMenu "$SERVER_NAME"
+        exitStatus=$?
+      # If server selection contains "discord", then it is a Discord server
+      elif [[ "$SERVER_SELECTION" = *"discord"* ]]; then
+        # Remove "discord" from the selection
+        local DISCORD_SERVER_URL="${SERVER_SELECTION#*discord }"
+        $URL_OPENER "$DISCORD_SERVER_URL" 2>&1
+        DisplayServerMenu "$SERVER_NAME"
+        exitStatus=$?
+      fi
+
+    fi
+  done
+
+  return $exitStatus
+}
+
+function DisplayRemotePlayMenu() {
   local HEIGHT=17
   local WIDTH=40
   local CHOICE_HEIGHT=10
-
-
-  # For every line from jq on the remote play list output .servers.nethack[].name, add it to the array indexed by an ascending letter
-  declare -a REMOTE_PLAY_OPTIONS
   local j
   local i
+  declare -a REMOTE_PLAY_OPTIONS
+
   i=0 #Index counter for adding to array
   j=0 #Option menu value generator
-
-
   while IFS= read -r line # Read a line
   do
     local letter
@@ -242,29 +425,35 @@ function RemotePlay() {
   done < <(jq -r '.servers.nethack[].name' < "$ATH_DIR/config.json")
 
   exec 3>&1;
+  local REMOTE_PLAY_CHOICE
   REMOTE_PLAY_CHOICE=$(dialog --clear \
                   --backtitle "$DIALOG_TITLE" \
                   --title "$TITLE" \
+                  --cancel-label "Back" \
                   --menu "Public Nethack Servers" \
                   $HEIGHT $WIDTH $CHOICE_HEIGHT \
                   "${REMOTE_PLAY_OPTIONS[@]}" \
                   2>&1 1>&3)
   local exitStatus=$?
   exec 3>&-;
-
   clear
 
   for i in "${!REMOTE_PLAY_OPTIONS[@]}"; do
     if [[ "${REMOTE_PLAY_OPTIONS[$i]}" = "${REMOTE_PLAY_CHOICE}" ]]; then
-      description=$(jq -r ".servers.nethack[] | select(.name==\"${REMOTE_PLAY_OPTIONS[$i+1]}\") | .description" ~/allthehacks/config.json)
-      echo "$description"
+      local SERVER_NAME="${REMOTE_PLAY_OPTIONS[$i+1]}"
+      DisplayServerMenu "$SERVER_NAME"
+      local res=$?
+      if [ "$res" -eq 1 ]; then
+        DisplayRemotePlayMenu
+        exitStatus=$?
+      fi
     fi
   done
 
   return $exitStatus
 }
 
-function MainMenu(){
+function DisplayMainMenu(){
   local HEIGHT=10
   local WIDTH=40
   local CHOICE_HEIGHT=4
@@ -278,19 +467,19 @@ function MainMenu(){
   MAIN_MENU_CHOICE=$(dialog --clear \
                   --backtitle "$DIALOG_TITLE" \
                   --title "$TITLE" \
+                  --cancel-label "Quit" \
                   --menu "Main Menu" \
                   $HEIGHT $WIDTH $CHOICE_HEIGHT \
                   "${MAIN_MENU_OPTIONS[@]}" \
                   2>&1 >/dev/tty)
-
   clear
   case $MAIN_MENU_CHOICE in
           A)
-              RemotePlay
+              DisplayRemotePlayMenu
               local res=$?
               if [ "$res" -eq 1 ]; then
                 unset MAIN_MENU_CHOICE
-                MainMenu
+                DisplayMainMenu
               fi
               ;;
           B)
@@ -319,4 +508,4 @@ SetupDependencyList
 InstallDependencies
 # Set up our installation if necessary
 SetupInstallation
-MainMenu
+DisplayMainMenu
