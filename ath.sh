@@ -221,6 +221,16 @@ function SetupInstallation() {
   fi
 }
 
+# Validates whether the config.json is valid JSON
+function ValidateConfig() {
+  # Check to see if the config file is valid JSON
+  if ! [ "$(jq -e '.' "$ATH_DIR/config.json")" ]; then
+    # If the config file is not valid JSON, we need to exit with an error
+    echo "Error: Config file is not valid JSON, aborting"
+    exit 1
+  fi
+}
+
 # Takes a number argument and returns a letter starting at 0 = A, 1 = B, 2 = C, etc to 25 = Z
 function NumberToLetter() {
   local __resultvar=$2
@@ -508,4 +518,7 @@ SetupDependencyList
 InstallDependencies
 # Set up our installation if necessary
 SetupInstallation
+# Validate our config
+ValidateConfig
+# Display the main menu
 DisplayMainMenu

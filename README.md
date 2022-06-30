@@ -14,4 +14,7 @@ The ath script can be run from anywhere, and will install all the necessary depe
 
 # Todo 
 
-* Add a list of all (as many as possible) nethack variant repositories to default servers.json
+* Add nethack variant information to config.json
+* Add nethack variant patching based on host type
+* Add nethack variant build and installation to the ath directory
+* Add nethack variant exports to current shell configuration
