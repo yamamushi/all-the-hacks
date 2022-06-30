@@ -202,7 +202,7 @@ function CheckForAthDir() {
   if [ ! -d "$ATH_DIR" ]; then
 
     # Ask user if they want to create the directory
-    dialog --title "$DIALOG_TITLE" --yesno "An installation was not found, would you like to create the $ATH_DIR directory and download the default configs?" 8 60
+    dialog --backtitle "$DIALOG_TITLE" --title "New Install" --yesno "An installation was not found, would you like to create the $ATH_DIR directory and download the default configs?" 8 60
     if [ $? -eq 0 ]; then
       # Create the directory
       mkdir "$ATH_DIR"
@@ -225,7 +225,7 @@ function SetupInstallation() {
     # We validated the directory exists, but now we need to verify the config file exists
     if [[ ! -f "$ATH_DIR/config.json" ]]; then
       # If the config file does not exist, we prompt to download one
-      dialog --title "$DIALOG_TITLE" --yesno "No config file was found, would you like to download the default config file?" 8 60
+      dialog --backtitle "$DIALOG_TITLE" --title "No Config Found" --yesno "No config file was found, would you like to download the default config file?" 8 60
       if [ $? -eq 0 ]; then
         RetrieveDefaultConfig
       else
@@ -271,17 +271,17 @@ function DisplayNethackServerMenu() {
   local SERVER_WEBSITE
   SERVER_WEBSITE=$(jq -r ".servers.nethack[] | select(.name==\"${SERVER_NAME}\") | .website" $ATH_DIR/config.json)
   local SERVER_IRC
-  SERVER_IRC=$(jq -r ".servers.nethack[] | select(.name==\"${SERVER_NAME}\") | .irc" $ATH_DIR/config.json)
+  SERVER_IRC=$(jq -r ".servers.nethack[] | select(.name==\"${SERVER_NAME}\") | .irc" "$ATH_DIR"/config.json)
   local SERVER_DISCORD
-  SERVER_DISCORD=$(jq -r ".servers.nethack[] | select(.name==\"${SERVER_NAME}\") | .discord" $ATH_DIR/config.json)
+  SERVER_DISCORD=$(jq -r ".servers.nethack[] | select(.name==\"${SERVER_NAME}\") | .discord" "$ATH_DIR"/config.json)
   local SERVER_SSH_USERNAME
-  SERVER_SSH_USERNAME=$(jq -r ".servers.nethack[] | select(.name==\"${SERVER_NAME}\") | .ssh_username" $ATH_DIR/config.json)
+  SERVER_SSH_USERNAME=$(jq -r ".servers.nethack[] | select(.name==\"${SERVER_NAME}\") | .ssh_username" "$ATH_DIR"/config.json)
   local SERVER_SSH_PORT
-  SERVER_SSH_PORT=$(jq -r ".servers.nethack[] | select(.name==\"${SERVER_NAME}\") | .ssh_port" $ATH_DIR/config.json)
+  SERVER_SSH_PORT=$(jq -r ".servers.nethack[] | select(.name==\"${SERVER_NAME}\") | .ssh_port" "$ATH_DIR"/config.json)
   local SERVER_SSH_PASSWORD
-  SERVER_SSH_PASSWORD=$(jq -r ".servers.nethack[] | select(.name==\"${SERVER_NAME}\") | .ssh_password" $ATH_DIR/config.json)
+  SERVER_SSH_PASSWORD=$(jq -r ".servers.nethack[] | select(.name==\"${SERVER_NAME}\") | .ssh_password" "$ATH_DIR"/config.json)
   local TELNET_SERVER_PORT
-  TELNET_SERVER_PORT=$(jq -r ".servers.nethack[] | select(.name==\"${SERVER_NAME}\") | .telnet_port" $ATH_DIR/config.json)
+  TELNET_SERVER_PORT=$(jq -r ".servers.nethack[] | select(.name==\"${SERVER_NAME}\") | .telnet_port" "$ATH_DIR"/config.json)
 
   SERVER_DESCRIPTION="$SERVER_DESCRIPTION\n"
   # If SERVER_WEBSITE is not empty, add it to the description
@@ -479,9 +479,9 @@ function DisplayNethackRemotePlayMenu() {
   local REMOTE_PLAY_CHOICE
   REMOTE_PLAY_CHOICE=$(dialog --clear \
     --backtitle "$DIALOG_TITLE" \
-    --title "$TITLE" \
+    --title "Public Nethack Servers" \
     --cancel-label "Back" \
-    --menu "Public Nethack Servers" \
+    --menu "Choose a server to connect to" \
     $HEIGHT $WIDTH $CHOICE_HEIGHT \
     "${REMOTE_PLAY_OPTIONS[@]}" \
     2>&1 1>&3)
@@ -506,9 +506,135 @@ function DisplayNethackRemotePlayMenu() {
 
 function DisplayInstallInformationMenu() {
   local GAME_NAME="$1"
-  echo $GAME_NAME
-  sleep 1
-  return 1
+  local HEIGHT=24
+  local WIDTH=80
+  local CHOICE_HEIGHT=18
+
+  local MANAGE_GAME_MENU_TEXT
+  local GAME_DESCRIPTION
+  GAME_DESCRIPTION=$(jq -r ".games.nethack_variants[] | select(.name==\"${GAME_NAME}\") | .description" "$ATH_DIR"/config.json)
+  # If GAME_DESCRIPTION is not blank, then add it to MANAGE_GAME_MENU_TEXT
+  if [ -n "$GAME_DESCRIPTION" ]; then
+    MANAGE_GAME_MENU_TEXT="$GAME_DESCRIPTION\n"
+  fi
+
+  local GAME_VARIANT_TYPE
+  GAME_VARIANT_TYPE=$(jq -r ".games.nethack_variants[] | select(.name==\"${GAME_NAME}\") | .variant_type" "$ATH_DIR"/config.json)
+  # If GAME_VARIANT_TYPE is not blank, then add it to MANAGE_GAME_MENU_TEXT
+  if [ -n "$GAME_VARIANT_TYPE" ]; then
+    MANAGE_GAME_MENU_TEXT="$MANAGE_GAME_MENU_TEXT\nVariant Type: $GAME_VARIANT_TYPE"
+  fi
+
+  local GAME_DEVELOPMENT_STATUS
+  GAME_DEVELOPMENT_STATUS=$(jq -r ".games.nethack_variants[] | select(.name==\"${GAME_NAME}\") | .development_status" "$ATH_DIR"/config.json)
+  # If GAME_DEVELOPMENT_STATUS is not blank, then add it to MANAGE_GAME_MENU_TEXT
+  if [ -n "$GAME_DEVELOPMENT_STATUS" ]; then
+    MANAGE_GAME_MENU_TEXT="$MANAGE_GAME_MENU_TEXT\nStatus: $GAME_DEVELOPMENT_STATUS\n"
+  fi
+
+  local GAME_WEBSITE
+  GAME_WEBSITE=$(jq -r ".games.nethack_variants[] | select(.name==\"${GAME_NAME}\") | .website" "$ATH_DIR"/config.json)
+  # If GAME_WEBSITE is not blank, then add it to MANAGE_GAME_MENU_TEXT
+  if [ -n "$GAME_WEBSITE" ]; then
+    MANAGE_GAME_MENU_TEXT="$MANAGE_GAME_MENU_TEXT\nWebsite: $GAME_WEBSITE"
+  fi
+
+  local GAME_WIKI_ENTRY
+  GAME_WIKI_ENTRY=$(jq -r ".games.nethack_variants[] | select(.name==\"${GAME_NAME}\") | .nethack_wiki_entry" "$ATH_DIR"/config.json)
+  # If GAME_WIKI_ENTRY is not blank, then add it to MANAGE_GAME_MENU_TEXT
+  if [ -n "$GAME_WIKI_ENTRY" ]; then
+    MANAGE_GAME_MENU_TEXT="$MANAGE_GAME_MENU_TEXT\nWiki Entry: $GAME_WIKI_ENTRY"
+  fi
+
+  local GAME_GITHUB_PAGE
+  GAME_GITHUB_PAGE=$(jq -r ".games.nethack_variants[] | select(.name==\"${GAME_NAME}\") | .github_page" "$ATH_DIR"/config.json)
+  # If GAME_GITHUB_PAGE is not blank, then add it to MANAGE_GAME_MENU_TEXT
+  if [ -n "$GAME_GITHUB_PAGE" ]; then
+    MANAGE_GAME_MENU_TEXT="$MANAGE_GAME_MENU_TEXT\nGithub Page: $GAME_GITHUB_PAGE"
+  fi
+
+  local GAME_MAINTAINER
+  GAME_MAINTAINER=$(jq -r ".games.nethack_variants[] | select(.name==\"${GAME_NAME}\") | .maintainer" "$ATH_DIR"/config.json)
+  # If GAME_MAINTAINER is not blank, then add it to MANAGE_GAME_MENU_TEXT
+  if [ -n "$GAME_MAINTAINER" ]; then
+    MANAGE_GAME_MENU_TEXT="$MANAGE_GAME_MENU_TEXT\nMaintainer: $GAME_MAINTAINER"
+
+    local GAME_MAINTAINER_URL
+    GAME_MAINTAINER_URL=$(jq -r ".games.nethack_variants[] | select(.name==\"${GAME_NAME}\") | .maintainer_url" "$ATH_DIR"/config.json)
+    # If GAME_MAINTAINER_URL is not blank, then add it to MANAGE_GAME_MENU_TEXT
+    if [ -n "$GAME_MAINTAINER_URL" ]; then
+      MANAGE_GAME_MENU_TEXT="$MANAGE_GAME_MENU_TEXT - $GAME_MAINTAINER_URL"
+    fi
+  fi
+
+  local MANAGE_GAME_MENU_OPTIONS
+  MANAGE_GAME_MENU_OPTIONS=(
+    A "Install ${GAME_NAME}"
+    B "Update ${GAME_NAME}"
+    C "Remove ${GAME_NAME}"
+    D "Setup Exports for ${GAME_NAME}"
+  )
+
+  local j
+  j=4
+  local i
+  i=8
+
+  # If GAME_WEBSITE is not blank, then add it to MANAGE_GAME_MENU_OPTIONS
+  if [ -n "$GAME_WEBSITE" ]; then
+    local WEBSITE_MENU_OPTION
+    NumberToLetter "$j" WEBSITE_MENU_OPTION
+    ((j++))
+    MANAGE_GAME_MENU_OPTIONS[$i]="$WEBSITE_MENU_OPTION"
+    MANAGE_GAME_MENU_OPTIONS[$i + 1]="website $GAME_WEBSITE"
+    ((i = (i + 2)))
+  fi
+
+  # If GAME_WIKI_ENTRY is not blank, then add it to MANAGE_GAME_MENU_OPTIONS
+  if [ -n "$GAME_WIKI_ENTRY" ]; then
+    local WIKI_ENTRY_MENU_OPTION
+    NumberToLetter "$j" WIKI_ENTRY_MENU_OPTION
+    ((j++))
+    MANAGE_GAME_MENU_OPTIONS[$i]="$WIKI_ENTRY_MENU_OPTION"
+    MANAGE_GAME_MENU_OPTIONS[$i + 1]="wiki $GAME_WIKI_ENTRY"
+    ((i = (i + 2)))
+  fi
+
+  # If GAME_GITHUB_PAGE is not blank, then add it to MANAGE_GAME_MENU_OPTIONS
+  if [ -n "$GAME_GITHUB_PAGE" ]; then
+    local GITHUB_PAGE_MENU_OPTION
+    NumberToLetter "$j" GITHUB_PAGE_MENU_OPTION
+    ((j++))
+    MANAGE_GAME_MENU_OPTIONS[$i]="$GITHUB_PAGE_MENU_OPTION"
+    MANAGE_GAME_MENU_OPTIONS[$i + 1]="github $GAME_GITHUB_PAGE"
+    ((i = (i + 2)))
+  fi
+
+  # If GAME_MAINTAINER_URL is not blank, then add it to MANAGE_GAME_MENU_OPTIONS
+  if [ -n "$GAME_MAINTAINER_URL" ]; then
+    local MAINTAINER_URL_MENU_OPTION
+    NumberToLetter "$j" MAINTAINER_URL_MENU_OPTION
+    ((j++))
+    MANAGE_GAME_MENU_OPTIONS[$i]="$MAINTAINER_URL_MENU_OPTION"
+    MANAGE_GAME_MENU_OPTIONS[$i + 1]="maintainer $GAME_MAINTAINER_URL"
+    ((i = (i + 2)))
+  fi
+
+  exec 3>&1
+  local MANAGE_GAME_MENU_CHOICE
+  MANAGE_GAME_MENU_CHOICE=$(dialog \
+    --backtitle "$DIALOG_TITLE" \
+    --title "Manage $GAME_NAME" \
+    --clear \
+    --cancel-label "Back" \
+    --menu "$MANAGE_GAME_MENU_TEXT" $HEIGHT $WIDTH $CHOICE_HEIGHT \
+    "${MANAGE_GAME_MENU_OPTIONS[@]}" \
+    2>&1 1>&3)
+  exitStatus=$?
+  exec 3>&-
+  clear
+
+  return $exitStatus
 }
 
 # Displays a dialog with a list of all variants from the config file
@@ -535,9 +661,9 @@ function DisplayNethackInstallManagementMenu() {
   local INSTALL_MANAGEMENT_CHOICE
   INSTALL_MANAGEMENT_CHOICE=$(dialog --clear \
     --backtitle "$DIALOG_TITLE" \
-    --title "$TITLE" \
+    --title "Manage Nethack Installations" \
     --cancel-label "Back" \
-    --menu "Manage Nethack Installations" \
+    --menu "Choose a version to manage" \
     $HEIGHT $WIDTH $CHOICE_HEIGHT \
     "${INSTALL_MANAGEMENT_OPTIONS[@]}" \
     2>&1 1>&3)
@@ -565,6 +691,7 @@ function DisplayMainMenu() {
   local WIDTH=40
   local CHOICE_HEIGHT=4
 
+  local MAIN_MENU_OPTIONS
   MAIN_MENU_OPTIONS=(
     A "Local Play"
     B "Remote Play"
@@ -575,9 +702,9 @@ function DisplayMainMenu() {
   local MAIN_MENU_CHOICE
   MAIN_MENU_CHOICE=$(dialog --clear \
     --backtitle "$DIALOG_TITLE" \
-    --title "$TITLE" \
+    --title "Main Menu" \
     --cancel-label "Quit" \
-    --menu "Main Menu" $HEIGHT $WIDTH $CHOICE_HEIGHT \
+    --menu "" $HEIGHT $WIDTH $CHOICE_HEIGHT \
     "${MAIN_MENU_OPTIONS[@]}" \
     2>&1 >/dev/tty)
   clear
