@@ -10,7 +10,6 @@ MISSING_DEPENDENCIES=""
 URL_OPENER='unknown'
 
 # Parse command line options
-# -c <config file> (default is $HOME/allthehacks/config.json)
 # -d <directory> (default is $HOME/allthehacks/)
 # -h <help>
 function ParseCommandLineOptions() {
@@ -217,7 +216,7 @@ function CheckForAthDir() {
   eval $__resultvar="nonewinstall" # Return 1 to indicate that the directory exists, but we did not check for a config
 }
 
-# Setup our installation directory and configuration if they don't exist
+# Set up our installation directory and configuration if they don't exist
 function SetupInstallation() {
   local SETUP_STATUS
   CheckForAthDir SETUP_STATUS
@@ -267,9 +266,9 @@ function DisplayNethackServerMenu() {
   declare -a SERVER_MENU_OPTIONS
 
   local SERVER_DESCRIPTION
-  SERVER_DESCRIPTION=$(jq -r ".servers.nethack[] | select(.name==\"${SERVER_NAME}\") | .description" $ATH_DIR/config.json)
+  SERVER_DESCRIPTION=$(jq -r ".servers.nethack[] | select(.name==\"${SERVER_NAME}\") | .description" "$ATH_DIR"/config.json)
   local SERVER_WEBSITE
-  SERVER_WEBSITE=$(jq -r ".servers.nethack[] | select(.name==\"${SERVER_NAME}\") | .website" $ATH_DIR/config.json)
+  SERVER_WEBSITE=$(jq -r ".servers.nethack[] | select(.name==\"${SERVER_NAME}\") | .website" "$ATH_DIR"/config.json)
   local SERVER_IRC
   SERVER_IRC=$(jq -r ".servers.nethack[] | select(.name==\"${SERVER_NAME}\") | .irc" "$ATH_DIR"/config.json)
   local SERVER_DISCORD
@@ -285,15 +284,15 @@ function DisplayNethackServerMenu() {
 
   SERVER_DESCRIPTION="$SERVER_DESCRIPTION\n"
   # If SERVER_WEBSITE is not empty, add it to the description
-  if [[ ! -z $SERVER_WEBSITE ]]; then
+  if [[ -n $SERVER_WEBSITE ]]; then
     SERVER_DESCRIPTION="$SERVER_DESCRIPTION\nWebsite: $SERVER_WEBSITE"
   fi
   # If SERVER_IRC is not empty, add it to the description
-  if [[ ! -z $SERVER_IRC ]]; then
+  if [[ -n $SERVER_IRC ]]; then
     SERVER_DESCRIPTION="$SERVER_DESCRIPTION\nIRC: $SERVER_IRC"
   fi
   # If SERVER_DISCORD is not empty, add it to the description
-  if [[ ! -z $SERVER_DISCORD ]]; then
+  if [[ -n $SERVER_DISCORD ]]; then
     SERVER_DESCRIPTION="$SERVER_DESCRIPTION\nDiscord: $SERVER_DISCORD"
   fi
 
@@ -301,7 +300,7 @@ function DisplayNethackServerMenu() {
   local SERVER_LOCATIONS
   while IFS= read -r line; do # Read a line
     # If line is not empty, add it to the description
-    if [[ ! -z $line ]]; then
+    if [[ -n $line ]]; then
       # If SERVER_LOCATIONS is empty, add the first location to it
       if [[ -z $SERVER_LOCATIONS ]]; then
         SERVER_LOCATIONS="$line"
@@ -309,11 +308,16 @@ function DisplayNethackServerMenu() {
         SERVER_LOCATIONS="$SERVER_LOCATIONS | $line"
       fi
     fi
-  done < <(jq -r ".servers.nethack[] | select(.name==\"${SERVER_NAME}\") | .locations | .[] " $ATH_DIR/config.json)
+  done < <(jq -r ".servers.nethack[] | select(.name==\"${SERVER_NAME}\") | .locations | .[] " "$ATH_DIR"/config.json)
 
   # If SERVER_LOCATIONS is not empty, add it to the description
   if [[ -n $SERVER_LOCATIONS ]]; then
     SERVER_DESCRIPTION="$SERVER_DESCRIPTION\nLocations: $SERVER_LOCATIONS"
+  fi
+
+  # If SERVER_SSH_PASSWORD is not empty, add it to the description
+  if [[ -n $SERVER_SSH_PASSWORD ]]; then
+    SERVER_DESCRIPTION="$SERVER_DESCRIPTION\nSSH Password: $SERVER_SSH_PASSWORD"
   fi
 
   # Build SERVER_MENU_OPTIONS array with ssh servers first
@@ -324,14 +328,9 @@ function DisplayNethackServerMenu() {
     NumberToLetter $j letter
     SERVER_MENU_OPTIONS[$i]=$letter
     ((j++))
-    # If SERVER_SSH_PASSWORD is not empty, add it to the description
-    if [[ ! -z $SERVER_SSH_PASSWORD ]]; then
-      SERVER_DESCRIPTION="$SERVER_DESCRIPTION\nSSH Password: $SERVER_SSH_PASSWORD"
-    fi
     SERVER_MENU_OPTIONS[($i + 1)]="ssh $SERVER_SSH_USERNAME@$line"
-    ((i++))
     ((i = (i + 2)))
-  done < <(jq -r ".servers.nethack[] | select(.name==\"${SERVER_NAME}\") | .ssh_servers | .[]" < "$ATH_DIR/config.json")
+  done < <(jq -r ".servers.nethack[] | select(.name==\"${SERVER_NAME}\") | .ssh_servers | .[]" < "$ATH_DIR"/config.json)
 
   # Add telnet servers to list of options
   while IFS= read -r line; do # Read a line
@@ -341,17 +340,17 @@ function DisplayNethackServerMenu() {
     ((j++))
     SERVER_MENU_OPTIONS[($i + 1)]="telnet $line"
     ((i = (i + 2)))
-  done < <(jq -r ".servers.nethack[] | select(.name==\"${SERVER_NAME}\") | .telnet_servers | .[]" < "$ATH_DIR/config.json")
+  done < <(jq -r ".servers.nethack[] | select(.name==\"${SERVER_NAME}\") | .telnet_servers | .[]" < "$ATH_DIR"/config.json)
 
   # Add web clients to the list of options
   while IFS= read -r line; do # Read a line
     local letter
-    NumberToLetter $j letter
+    NumberToLetter "$j" letter
     SERVER_MENU_OPTIONS[$i]=$letter
     ((j++))
     SERVER_MENU_OPTIONS[($i + 1)]="web-client $line"
     ((i = (i + 2)))
-  done < <(jq -r ".servers.nethack[] | select(.name==\"${SERVER_NAME}\") | .web_clients | .[]" < "$ATH_DIR/config.json")
+  done < <(jq -r ".servers.nethack[] | select(.name==\"${SERVER_NAME}\") | .web_clients | .[]" < "$ATH_DIR"/config.json)
 
   # Add server IRC and Discord to the list of options
   local letter
@@ -379,11 +378,6 @@ function DisplayNethackServerMenu() {
     SERVER_MENU_OPTIONS[($i + 1)]="discord $SERVER_DISCORD"
     ((i = (i + 2)))
   fi
-
-  # loop over SERVER_MENU_OPTIONS and display them
-  for i in "${SERVER_MENU_OPTIONS[@]}"; do
-    echo "$i"
-  done
 
   exec 3>&1
   local SERVER_MENU_CHOICE
@@ -504,6 +498,7 @@ function DisplayNethackRemotePlayMenu() {
   return $exitStatus
 }
 
+#We Are Here
 function DisplayInstallInformationMenu() {
   local GAME_NAME="$1"
   local HEIGHT=24
@@ -613,7 +608,7 @@ function DisplayInstallInformationMenu() {
   # If GAME_MAINTAINER_URL is not blank, then add it to MANAGE_GAME_MENU_OPTIONS
   if [ -n "$GAME_MAINTAINER_URL" ]; then
     local MAINTAINER_URL_MENU_OPTION
-    NumberToLetter $j MAINTAINER_URL_MENU_OPTION
+    NumberToLetter "$j" MAINTAINER_URL_MENU_OPTION
     ((j++))
     MANAGE_GAME_MENU_OPTIONS[$i]="$MAINTAINER_URL_MENU_OPTION"
     MANAGE_GAME_MENU_OPTIONS[$i + 1]="maintainer $GAME_MAINTAINER_URL"

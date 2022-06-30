@@ -223,7 +223,12 @@
         "maintainer": "DevTeam",
         "maintainer_url": "https://nethackwiki.com/wiki/DevTeam",
         "nethack_wiki_entry": "https://nethackwiki.com/wiki/NetHack_3.6.0",
-        "development_status": "Actively Developed"
+        "development_status": "Actively Developed",
+        "build_steps": [
+          "./configure",
+          "make",
+          "make install"
+        ]
       },
       {
         "name": "Nethack 3.7",
