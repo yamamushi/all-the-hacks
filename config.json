@@ -224,11 +224,18 @@
         "maintainer_url": "https://nethackwiki.com/wiki/DevTeam",
         "nethack_wiki_entry": "https://nethackwiki.com/wiki/NetHack_3.6.0",
         "development_status": "Actively Developed",
-        "build_steps": [
-          "./configure",
+        "games_install_dir": "nethack-3.7-dir",
+        "patch_names_linux": [],
+        "build_steps_linux": [],
+        "path_linux": "",
+        "patch_names_mac0s": [],
+        "build_steps_macos": [
+          "sh sys/unix/setup.sh sys/unix/hints/macos.370",
           "make",
-          "make install"
-        ]
+          "make install PREFIX=ATH_INSTALL_PATH_VAR WANT_WIN_TTY=1"
+        ],
+        "path_macos": "bin/nethack",
+        "installed": false
       },
       {
         "name": "Nethack 3.7",
@@ -326,7 +333,21 @@
         "maintainer": "Bluescreenofdeath a.k.a. Amy",
         "maintainer_url": "https://nethackwiki.com/wiki/User:Bluescreenofdeath",
         "nethack_wiki_entry": "https://nethackwiki.com/wiki/Slash%27EM_Extended",
-        "development_status": "Actively Developed"
+        "development_status": "Actively Developed",
+        "patch_names_linux": [],
+        "build_steps_linux": [],
+        "path_linux": "",
+        "patch_names_macos": [
+          "slex_preserve_lock.patch",
+          "slex_makefile.patch"
+        ],
+        "build_steps_macos": [
+          "sh sys/unix/setup.sh",
+          "make",
+          "make install PREFIX=ATH_INSTALL_PATH_VAR WANT_WIN_TTY=1"
+        ],
+        "path_macos": "local/bin/slex",
+        "installed": false
       },
       {
         "name": "SlashTHEM",

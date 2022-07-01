@@ -1,0 +1,12 @@
+diff --git a/include/decl.h b/include/decl.h
+index 2d003d0d..e7832b59 100644
+--- a/include/decl.h
++++ b/include/decl.h
+@@ -332,6 +332,7 @@ E NEARDATA struct sinfo {
+ 	int in_paniclog;
+ #endif
+ 	int bonesdo;	/* suppress certain stuff at this point to prevent crashes --Amy */
++    int preserve_locks;
+ } program_state;
+
+ E boolean restoring;

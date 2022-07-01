@@ -1,0 +1,13 @@
+diff --git a/sys/unix/Makefile.src b/sys/unix/Makefile.src
+index 50833222..ca78e1d5 100644
+--- a/sys/unix/Makefile.src
++++ b/sys/unix/Makefile.src
+@@ -144,7 +144,7 @@ SYSOBJ = ioctl.o unixmain.o unixtty.o unixunix.o unixres.o recover.o
+ # flags for debugging:
+ # CFLAGS = -g -I../include
+
+-CFLAGS = -g -O -fcommon
++CFLAGS = -g -O -fcommon -Wno-implicit-function-declaration
+ CFLAGS += -I../include
+ LFLAGS = -g
+

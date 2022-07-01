@@ -14,7 +14,7 @@ The ath script can be run from anywhere, and will install all the necessary depe
 
 # Todo 
 
-* Parsing build_steps 
+* Parsing build_steps by OS and arch
 * Add nethack variant patching based on host type
 * Add nethack variant build configuration options
 * Add nethack variant build and installation to the ath directory

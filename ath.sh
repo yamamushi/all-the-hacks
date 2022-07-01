@@ -498,7 +498,7 @@ function DisplayNethackRemotePlayMenu() {
   return $exitStatus
 }
 
-#We Are Here
+We Are Here
 function DisplayInstallInformationMenu() {
   local GAME_NAME="$1"
   local HEIGHT=24
