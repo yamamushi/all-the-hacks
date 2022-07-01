@@ -250,7 +250,17 @@
         "maintainer": "DevTeam",
         "maintainer_url": "https://nethackwiki.com/wiki/DevTeam",
         "nethack_wiki_entry": "https://nethackwiki.com/wiki/NetHack_3.7.0",
-        "development_status": "Actively Developed"
+        "development_status": "Actively Developed",
+        "games_install_dir": "",
+        "patch_names_linux": [],
+        "build_steps_linux": [],
+        "install_command_linux": "",
+        "path_linux": "",
+        "patch_names_osx": [],
+        "build_steps_osx": [],
+        "install_command_osx": "",
+        "path_osx": "",
+        "installed": false
       },
       {
         "name": "dNetHack",
@@ -264,7 +274,17 @@
         "maintainer": "Chris",
         "maintainer_url": "https://nethackwiki.com/wiki/User:Chris",
         "nethack_wiki_entry": "https://nethackwiki.com/wiki/DNetHack",
-        "development_status": "Actively Developed"
+        "development_status": "Actively Developed",
+        "games_install_dir": "",
+        "patch_names_linux": [],
+        "build_steps_linux": [],
+        "install_command_linux": "",
+        "path_linux": "",
+        "patch_names_osx": [],
+        "build_steps_osx": [],
+        "install_command_osx": "",
+        "path_osx": "",
+        "installed": false
       },
       {
         "name": "EvilHack",
@@ -278,7 +298,17 @@
         "maintainer": "K2",
         "maintainer_url": "https://nethackwiki.com/wiki/User:K2",
         "nethack_wiki_entry": "https://nethackwiki.com/wiki/EvilHack",
-        "development_status": "Actively Developed"
+        "development_status": "Actively Developed",
+        "games_install_dir": "",
+        "patch_names_linux": [],
+        "build_steps_linux": [],
+        "install_command_linux": "",
+        "path_linux": "",
+        "patch_names_osx": [],
+        "build_steps_osx": [],
+        "install_command_osx": "",
+        "path_osx": "",
+        "installed": false
       },
       {
         "name": "FIQHack",
@@ -292,7 +322,17 @@
         "maintainer": "FredrIQ aka FIQ",
         "maintainer_url": "https://nethackwiki.com/wiki/User:FIQ",
         "nethack_wiki_entry": "https://nethackwiki.com/wiki/FIQHack",
-        "development_status": "Actively Developed"
+        "development_status": "Actively Developed",
+        "games_install_dir": "",
+        "patch_names_linux": [],
+        "build_steps_linux": [],
+        "install_command_linux": "",
+        "path_linux": "",
+        "patch_names_osx": [],
+        "build_steps_osx": [],
+        "install_command_osx": "",
+        "path_osx": "",
+        "installed": false
       },
       {
         "name": "GnollHack",
@@ -306,7 +346,17 @@
         "maintainer": "Sound Mind Games",
         "maintainer_url": "https://hyvanmielenpelit.fi/tule-mukaan/pienkannatusjaseneksi/in-english",
         "nethack_wiki_entry": "https://nethackwiki.com/wiki/GnollHack",
-        "development_status": "Actively Developed"
+        "development_status": "Actively Developed",
+        "games_install_dir": "",
+        "patch_names_linux": [],
+        "build_steps_linux": [],
+        "install_command_linux": "",
+        "path_linux": "",
+        "patch_names_osx": [],
+        "build_steps_osx": [],
+        "install_command_osx": "",
+        "path_osx": "",
+        "installed": false
       },
       {
         "name": "notdNetHack",
@@ -320,7 +370,17 @@
         "maintainer": "Demo",
         "maintainer_url": "",
         "nethack_wiki_entry": "",
-        "development_status": "Actively Developed"
+        "development_status": "Actively Developed",
+        "games_install_dir": "",
+        "patch_names_linux": [],
+        "build_steps_linux": [],
+        "install_command_linux": "",
+        "path_linux": "",
+        "patch_names_osx": [],
+        "build_steps_osx": [],
+        "install_command_osx": "",
+        "path_osx": "",
+        "installed": false
       },
       {
         "name": "Slash'EM Extended",
@@ -363,7 +423,17 @@
         "maintainer": "Soviet5lo",
         "maintainer_url": "https://nethackwiki.com/wiki/User:Soviet5lo",
         "nethack_wiki_entry": "https://nethackwiki.com/wiki/SlashTHEM",
-        "development_status": "Actively Developed"
+        "development_status": "Actively Developed",
+        "games_install_dir": "",
+        "patch_names_linux": [],
+        "build_steps_linux": [],
+        "install_command_linux": "",
+        "path_linux": "",
+        "patch_names_osx": [],
+        "build_steps_osx": [],
+        "install_command_osx": "",
+        "path_osx": "",
+        "installed": false
       },
       {
         "name": "SpliceHack",
@@ -377,7 +447,17 @@
         "maintainer": "AntiGulp a.k.a. NullCGT",
         "maintainer_url": "https://nethackwiki.com/wiki/User:Agulp",
         "nethack_wiki_entry": "https://nethackwiki.com/wiki/SpliceHack",
-        "development_status": "Actively Developed"
+        "development_status": "Actively Developed",
+        "games_install_dir": "",
+        "patch_names_linux": [],
+        "build_steps_linux": [],
+        "install_command_linux": "",
+        "path_linux": "",
+        "patch_names_osx": [],
+        "build_steps_osx": [],
+        "install_command_osx": "",
+        "path_osx": "",
+        "installed": false
       },
       {
         "name": "UnNetHack",
@@ -391,7 +471,17 @@
         "maintainer": "Patric Müller a.k.a.Bhaak",
         "maintainer_url": "https://nethackwiki.com/wiki/User:Bhaak",
         "nethack_wiki_entry": "https://nethackwiki.com/wiki/UnNetHack",
-        "development_status": "Actively Developed"
+        "development_status": "Actively Developed",
+        "games_install_dir": "",
+        "patch_names_linux": [],
+        "build_steps_linux": [],
+        "install_command_linux": "",
+        "path_linux": "",
+        "patch_names_osx": [],
+        "build_steps_osx": [],
+        "install_command_osx": "",
+        "path_osx": "",
+        "installed": false
       },
       {
         "name": "xNetHack",
@@ -405,7 +495,17 @@
         "maintainer": "aosdict a.k.a Phol ende wodan",
         "maintainer_url": "https://nethackwiki.com/wiki/User:Phol_ende_wodan",
         "nethack_wiki_entry": "https://nethackwiki.com/wiki/XNetHack",
-        "development_status": "Actively Developed"
+        "development_status": "Actively Developed",
+        "games_install_dir": "",
+        "patch_names_linux": [],
+        "build_steps_linux": [],
+        "install_command_linux": "",
+        "path_linux": "",
+        "patch_names_osx": [],
+        "build_steps_osx": [],
+        "install_command_osx": "",
+        "path_osx": "",
+        "installed": false
       },
       {
         "name": "DNHslex",
@@ -419,7 +519,17 @@
         "maintainer": "Bluescreenofdeath a.k.a. Amy",
         "maintainer_url": "https://nethackwiki.com/wiki/User:Bluescreenofdeath",
         "nethack_wiki_entry": "https://nethackwiki.com/wiki/DNHslex",
-        "development_status": "Maintained"
+        "development_status": "Maintained",
+        "games_install_dir": "",
+        "patch_names_linux": [],
+        "build_steps_linux": [],
+        "install_command_linux": "",
+        "path_linux": "",
+        "patch_names_osx": [],
+        "build_steps_osx": [],
+        "install_command_osx": "",
+        "path_osx": "",
+        "installed": false
       },
       {
         "name": "GruntHack",
@@ -433,7 +543,17 @@
         "maintainer": "K2 & Tangles",
         "maintainer_url": "https://nethackwiki.com/wiki/User:K2",
         "nethack_wiki_entry": "https://nethackwiki.com/wiki/GruntHack",
-        "development_status": "Maintained"
+        "development_status": "Maintained",
+        "games_install_dir": "",
+        "patch_names_linux": [],
+        "build_steps_linux": [],
+        "install_command_linux": "",
+        "path_linux": "",
+        "patch_names_osx": [],
+        "build_steps_osx": [],
+        "install_command_osx": "",
+        "path_osx": "",
+        "installed": false
       },
       {
         "name": "Nethack 4",
@@ -447,7 +567,17 @@
         "maintainer": "Ais523",
         "maintainer_url": "https://nethackwiki.com/wiki/User:Ais523",
         "nethack_wiki_entry": "https://nethackwiki.com/wiki/NetHack_4",
-        "development_status": "Maintained"
+        "development_status": "Maintained",
+        "games_install_dir": "",
+        "patch_names_linux": [],
+        "build_steps_linux": [],
+        "install_command_linux": "",
+        "path_linux": "",
+        "patch_names_osx": [],
+        "build_steps_osx": [],
+        "install_command_osx": "",
+        "path_osx": "",
+        "installed": false
       },
       {
         "name": "NetHack Fourk",
@@ -461,7 +591,17 @@
         "maintainer": "Jonadab",
         "maintainer_url": "https://nethackwiki.com/wiki/User:Jonadab",
         "nethack_wiki_entry": "https://nethackwiki.com/wiki/NetHack_Fourk",
-        "development_status": "Maintained"
+        "development_status": "Maintained",
+        "games_install_dir": "",
+        "patch_names_linux": [],
+        "build_steps_linux": [],
+        "install_command_linux": "",
+        "path_linux": "",
+        "patch_names_osx": [],
+        "build_steps_osx": [],
+        "install_command_osx": "",
+        "path_osx": "",
+        "installed": false
       },
       {
         "name": "SLASH'EM",
@@ -475,7 +615,17 @@
         "maintainer": "Warren Cheung a.k.a. wacko",
         "maintainer_url": "https://sourceforge.net/u/wacko/profile/",
         "nethack_wiki_entry": "https://nethackwiki.com/wiki/SLASH%27EM",
-        "development_status": "Maintained"
+        "development_status": "Maintained",
+        "games_install_dir": "",
+        "patch_names_linux": [],
+        "build_steps_linux": [],
+        "install_command_linux": "",
+        "path_linux": "",
+        "patch_names_osx": [],
+        "build_steps_osx": [],
+        "install_command_osx": "",
+        "path_osx": "",
+        "installed": false
       },
       {
         "name": "SporkHack",
@@ -489,7 +639,17 @@
         "maintainer": "K2 and Tangles",
         "maintainer_url": "https://nethackwiki.com/wiki/User:K2",
         "nethack_wiki_entry": "https://nethackwiki.com/wiki/SporkHack",
-        "development_status": "Maintained"
+        "development_status": "Maintained",
+        "games_install_dir": "",
+        "patch_names_linux": [],
+        "build_steps_linux": [],
+        "install_command_linux": "",
+        "path_linux": "",
+        "patch_names_osx": [],
+        "build_steps_osx": [],
+        "install_command_osx": "",
+        "path_osx": "",
+        "installed": false
       },
       {
         "name": "AceHack",
@@ -503,7 +663,17 @@
         "maintainer": "Ais523",
         "maintainer_url": "https://nethackwiki.com/wiki/User:Ais523",
         "nethack_wiki_entry": "https://nethackwiki.com/wiki/AceHack",
-        "development_status": "Unmaintained"
+        "development_status": "Unmaintained",
+        "games_install_dir": "",
+        "patch_names_linux": [],
+        "build_steps_linux": [],
+        "install_command_linux": "",
+        "path_linux": "",
+        "patch_names_osx": [],
+        "build_steps_osx": [],
+        "install_command_osx": "",
+        "path_osx": "",
+        "installed": false
       },
       {
         "name": "DynaHack",
@@ -517,7 +687,17 @@
         "maintainer": "Tungtn",
         "maintainer_url": "https://nethackwiki.com/wiki/User:Tungtn",
         "nethack_wiki_entry": "https://nethackwiki.com/wiki/DynaHack",
-        "development_status": "Unmaintained"
+        "development_status": "Unmaintained",
+        "games_install_dir": "",
+        "patch_names_linux": [],
+        "build_steps_linux": [],
+        "install_command_linux": "",
+        "path_linux": "",
+        "patch_names_osx": [],
+        "build_steps_osx": [],
+        "install_command_osx": "",
+        "path_osx": "",
+        "installed": false
       }
     ]
   }
