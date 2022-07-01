@@ -330,7 +330,7 @@ function DisplayNethackServerMenu() {
     ((j++))
     SERVER_MENU_OPTIONS[($i + 1)]="ssh $SERVER_SSH_USERNAME@$line"
     ((i = (i + 2)))
-  done < <(jq -r ".servers.nethack[] | select(.name==\"${SERVER_NAME}\") | .ssh_servers | .[]" < "$ATH_DIR"/config.json)
+  done < <(jq -r ".servers.nethack[] | select(.name==\"${SERVER_NAME}\") | .ssh_servers | .[]" <"$ATH_DIR"/config.json)
 
   # Add telnet servers to list of options
   while IFS= read -r line; do # Read a line
@@ -340,7 +340,7 @@ function DisplayNethackServerMenu() {
     ((j++))
     SERVER_MENU_OPTIONS[($i + 1)]="telnet $line"
     ((i = (i + 2)))
-  done < <(jq -r ".servers.nethack[] | select(.name==\"${SERVER_NAME}\") | .telnet_servers | .[]" < "$ATH_DIR"/config.json)
+  done < <(jq -r ".servers.nethack[] | select(.name==\"${SERVER_NAME}\") | .telnet_servers | .[]" <"$ATH_DIR"/config.json)
 
   # Add web clients to the list of options
   while IFS= read -r line; do # Read a line
@@ -350,7 +350,7 @@ function DisplayNethackServerMenu() {
     ((j++))
     SERVER_MENU_OPTIONS[($i + 1)]="web-client $line"
     ((i = (i + 2)))
-  done < <(jq -r ".servers.nethack[] | select(.name==\"${SERVER_NAME}\") | .web_clients | .[]" < "$ATH_DIR"/config.json)
+  done < <(jq -r ".servers.nethack[] | select(.name==\"${SERVER_NAME}\") | .web_clients | .[]" <"$ATH_DIR"/config.json)
 
   # Add server IRC and Discord to the list of options
   local letter
@@ -467,7 +467,7 @@ function DisplayNethackRemotePlayMenu() {
     ((j++))
     REMOTE_PLAY_OPTIONS[($i + 1)]=$line
     ((i = (i + 2)))
-  done < <(jq -r '.servers.nethack[].name' < "$ATH_DIR/config.json")
+  done < <(jq -r '.servers.nethack[].name' <"$ATH_DIR/config.json")
 
   exec 3>&1
   local REMOTE_PLAY_CHOICE
@@ -498,14 +498,378 @@ function DisplayNethackRemotePlayMenu() {
   return $exitStatus
 }
 
-We Are Here
-function DisplayInstallInformationMenu() {
+function EscapedGameName() {
+  local GAME_NAME=$1
+  # Change to the build directory and run the build steps
+  local ESCAPED_GAME_NAME
+  # Replace spaces with dashes in the game name
+  ESCAPED_GAME_NAME="${GAME_NAME// /-}"
+  # Replaces ' with '-' in the game name
+  ESCAPED_GAME_NAME="${ESCAPED_GAME_NAME//\'/-}"
+
+  echo "$ESCAPED_GAME_NAME"
+}
+
+function InstallGame(){
+  local GAME_NAME=$1
+
+  local GAME_INSTALL_COMMAND
+  GAME_INSTALL_COMMAND=$(jq -r ".games.nethack_variants[] | select(.name==\"$GAME_NAME\") | .install_command_$PLATFORM" <"$ATH_DIR"/config.json)
+
+  local ESCAPED_GAME_NAME
+  ESCAPED_GAME_NAME=$(EscapedGameName "$GAME_NAME")
+
+
+  local GAME_INSTALL_PATH
+  GAME_INSTALL_PATH="$ATH_DIR/games/$ESCAPED_GAME_NAME"
+
+  # Replace the word "ATH_INSTALL_PATH_VAR" with the GAME_INSTALL_PATH variable
+  GAME_INSTALL_COMMAND="${GAME_INSTALL_COMMAND//ATH_INSTALL_PATH_VAR/$GAME_INSTALL_PATH}"
+
+  local USER_NAME
+  USER_NAME=$(whoami)
+
+  # Replace the word "ATH_USER_NAME_VAR" with the USER_NAME variable
+  GAME_INSTALL_COMMAND="${GAME_INSTALL_COMMAND//ATH_USER_NAME_VAR/$USER_NAME}"
+
+  echo "Game installation command:"
+  echo "$GAME_INSTALL_COMMAND"
+
+  # Run the game installation command
+  eval "$GAME_INSTALL_COMMAND"
+  if [ $? -ne 0 ]; then
+    echo "Game installation failed."
+    return 1
+  fi
+  return 0
+}
+
+function BuildGame() {
+  local GAME_NAME=$1
+  # Get a list of all of the build steps for this game
+  declare -a BUILD_STEPS
+  while IFS= read -r line # Read a line
+  do
+    # append the line to the array PATCH_LIST
+    BUILD_STEPS+=("$line")
+  # We pass || true here to ignore errors from the read if the field doesn't exist
+  done < <(jq -r ".games.nethack_variants[] | select(.name==\"$GAME_NAME\") | .build_steps_$PLATFORM | .[]" <"$ATH_DIR"/config.json || true)
+
+  # Tell the user what the build steps are
+  printf "\n"
+  echo "The following build steps will be performed:"
+  for i in "${!BUILD_STEPS[@]}"; do
+    echo "${BUILD_STEPS[$i]}"
+  done
+  printf "\n"
+
+  echo "Are you sure you want to continue? (y/n)"
+  read -r answer
+  if [[ "$answer" =~ ^([yY][eE][sS]|[yY])$ ]]; then
+    # Change to the build directory and run the build steps
+    local ESCAPED_GAME_NAME
+    ESCAPED_GAME_NAME=$(EscapedGameName "$GAME_NAME")
+    local LOCAL_REPO_PATH="$ATH_DIR/repos/$ESCAPED_GAME_NAME"
+    cd "$LOCAL_REPO_PATH" || exit
+
+    # Run the build steps
+    for i in "${!BUILD_STEPS[@]}"; do
+      printf "\n"
+      echo "Running build step: ${BUILD_STEPS[$i]}"
+      eval "${BUILD_STEPS[$i]}"
+      # If the build step fails, exit 1
+      if [ $? -ne 0 ]; then
+        # using printf two new lines to make the error message look nice
+        printf "\n\n"
+        echo "Build step failed: ${BUILD_STEPS[$i]}"
+        exit 1
+      fi
+    done
+  else
+    echo "Build aborted, exiting."
+    exit 1
+  fi
+
+
+  return 0 # Return 0 if build was successful
+}
+
+function SetupGamePatches() {
+  local GAME_NAME=$1
+  # Get list of patches to apply from the config file using read line
+  declare -a PATCH_LIST
+  while IFS= read -r line # Read a line
+  do
+    # append the line to the array PATCH_LIST
+    PATCH_LIST+=("$line")
+  done < <(jq -r ".games.nethack_variants[] | select(.name==\"$GAME_NAME\") | .patch_names_$PLATFORM | .[]" <"$ATH_DIR"/config.json || true)
+
+  # If there are patches to apply, and the first entry is not null tell the user and download them
+  if (( ${#PATCH_LIST[@]} )); then
+    echo "Found ${#PATCH_LIST[@]} patches to apply for this platform ($PLATFORM):"
+    # Print the list of patches to apply
+    for i in "${!PATCH_LIST[@]}"; do
+      echo "${PATCH_LIST[$i]}"
+    done
+    printf "\n"
+
+    echo "Downloading patches from GitHub (https://github.com/yamamushi/all-the-hacks/tree/master/patches/$PLATFORM/)"
+    echo "Press ctrl-c now to cancel"
+    # Print dots while waiting for the user to ctrl-c for 5 seconds
+    for i in {1..5}; do
+      echo -n "."
+      sleep 1
+    done
+
+    # Change to the build directory and run the build steps
+    local ESCAPED_GAME_NAME
+    ESCAPED_GAME_NAME=$(EscapedGameName "$GAME_NAME")
+    local LOCAL_REPO_PATH="$ATH_DIR/repos/$ESCAPED_GAME_NAME"
+    cd "$LOCAL_REPO_PATH" || exit
+
+    # Check to see if patch directory exists, if not create it
+    if [ ! -d "$ATH_DIR/patches/$PLATFORM" ]; then
+      mkdir -p "$ATH_DIR/patches/$PLATFORM"
+    fi
+    local PATCH_DOWNLOAD_PATH="$ATH_DIR/patches/$PLATFORM"
+    local PATCH_URL_BASE="https://raw.githubusercontent.com/yamamushi/all-the-hacks/master/patches/$PLATFORM/"
+
+    for i in "${!PATCH_LIST[@]}"; do
+      local PATCH_NAME="${PATCH_LIST[$i]}"
+      local PATCH_URL="$PATCH_URL_BASE/$PATCH_NAME"
+      local PATCH_PATH="$PATCH_DOWNLOAD_PATH/$PATCH_NAME"
+
+      printf "\n"
+      echo "Downloading $PATCH_URL to $PATCH_DOWNLOAD_PATH"
+      curl -L "$PATCH_URL" -o "$PATCH_PATH"
+      if [ $? -eq 1 ]; then
+        # Something went wrong, abort
+        echo "Error downloading patch, aborting"
+        exit 1
+      fi
+
+      printf "\n"
+      echo "Applying $PATCH_NAME"
+      git apply "$PATCH_PATH"
+    done
+    printf "\n"
+  fi
+  return 0 # Success
+}
+
+function GitCloneGame() {
+  local GAME_NAME=$1
+  # Check for repos directory, if it doesn't exist, create it
+  if [ ! -d "$ATH_DIR/repos" ]; then
+    mkdir "$ATH_DIR/repos"
+  fi
+
+  local GAME_GIT_REPOSITORY
+  GAME_GIT_REPOSITORY=$(jq -r ".games.nethack_variants[] | select(.name==\"$GAME_NAME\") | .git_repository" <"$ATH_DIR"/config.json)
+
+  local ESCAPED_GAME_NAME
+  ESCAPED_GAME_NAME=$(EscapedGameName "$GAME_NAME")
+  local LOCAL_REPO_PATH="$ATH_DIR/repos/$ESCAPED_GAME_NAME"
+
+  local DOWNLOAD_REPOSITORY=true
+  # If the local repository directory exists, remove it so we can clone the repository again
+  if [ -d "$LOCAL_REPO_PATH" ]; then
+    echo "Found existing repository, removing and cloning again"
+    # Prompt user to proceed with removing the existing repository or not
+    dialog --backtitle "$DIALOG_TITLE" --title "$GAME_NAME" --yesno "An existing repository download was detected, do you want to delete it and re-download it?" 8 60
+    if [ $? -eq 1 ]; then
+      clear # Clear the screen
+      DOWNLOAD_REPOSITORY=false
+    else
+      clear # Clear the screen
+      echo "Removing existing repository at $LOCAL_REPO_PATH"
+      rm -rf "$LOCAL_REPO_PATH"
+    fi
+  fi
+
+  if [ "$DOWNLOAD_REPOSITORY" = "true" ]; then
+    echo "Cloning $GAME_GIT_REPOSITORY into $LOCAL_REPO_PATH"
+    # Clone the repository into the local repository directory
+    git clone "$GAME_GIT_REPOSITORY" "$LOCAL_REPO_PATH"
+    if [ $? -eq 1 ]; then
+      # Something went wrong, abort
+      echo "Error cloning repository"
+      return 1
+    fi
+
+    # Checkout the correct branch
+    local BRANCH=$(jq -r ".games.nethack_variants[] | select(.name==\"$GAME_NAME\") | .git_branch" <"$ATH_DIR"/config.json)
+    echo "Checking out branch $BRANCH"
+
+    cd "$LOCAL_REPO_PATH" || exit
+    git checkout "$BRANCH"
+    if [ $? -eq 1 ]; then
+      # Something went wrong, abort
+      echo "Error checking out branch"
+      return 1 # Error
+    fi
+
+    # Checkout the correct commit
+    local COMMIT=$(jq -r ".games.nethack_variants[] | select(.name==\"$GAME_NAME\") | .git_commit" <"$ATH_DIR"/config.json)
+    # If commit is "latest", then skip this step
+    if [ "$COMMIT" != "latest" ]; then
+      echo "Checking out commit $COMMIT"
+      git checkout "$COMMIT"
+      if [ $? -eq 1 ]; then
+        # Something went wrong, abort
+        echo "Error checking out commit"
+        return 1 # Abort
+      fi
+    fi
+  else
+    # Clean the repository, so we can patch and build it again
+    echo "Cleaning repository"
+    cd "$LOCAL_REPO_PATH" || exit
+    git clean -fdx
+    if [ $? -eq 1 ]; then
+      # Something went wrong, abort
+      echo "Error cleaning repository"
+      return 1 # Abort
+    fi
+    git checkout .
+    if [ $? -eq 1 ]; then
+      # Something went wrong, abort
+      echo "Error checking out ."
+      return 1 # Abort
+    fi
+  fi
+
+
+  return 0 # Success
+}
+
+function DisplayErrorMessage() {
+  local MESSAGE=$1
+  dialog --backtitle "$DIALOG_TITLE" --title "Error" --msgbox "$MESSAGE" 8 60
+  return 0 # Success
+}
+
+function Installation() {
+  local GAME_NAME=$1
+  # Check to see if installed is true in the config file for this game
+  local INSTALLED
+  INSTALLED=$(jq -r ".games.nethack_variants[] | select(.name==\"$GAME_NAME\") | .installed" <"$ATH_DIR"/config.json)
+  if [ "$INSTALLED" = "true" ]; then
+    # Prompt user to proceed with reinstalling, remind them that no saved games will be lost
+    dialog --backtitle "$DIALOG_TITLE" --title "$GAME_NAME" --yesno "An existing installation was detected in your configuration, would you like to proceed with reinstalling?\n\nNo saved game data will be overwritten by this action" 8 60
+    if [ $? -eq 1 ]; then
+      return 0 # User chose not to reinstall
+    fi
+  fi
+
+  clear # Clear the screen and get ready for the installation
+
+  echo "Installing $GAME_NAME, press ctrl-c now to cancel"
+  # Print dots while waiting for the user to ctrl-c for 5 seconds
+  for i in {1..5}; do
+    echo -n "."
+    sleep 1
+  done
+
+  echo "Proceeding with installation."
+  GitCloneGame "$GAME_NAME"
+  if [ $? -eq 1 ]; then
+    Something went wrong, abort
+    echo "Error setting up repository, aborting"
+    exit 1
+  fi
+
+  printf "\n"
+  echo "Checking for patches"
+  SetupGamePatches "$GAME_NAME"
+  if [ $? -eq 1 ]; then
+    # Something went wrong, abort
+    echo "Error checking for patches, aborting"
+    exit 1
+  fi
+
+  echo "Preparing to build $GAME_NAME"
+  BuildGame "$GAME_NAME"
+  if [ $? -eq 1 ]; then
+    Something went wrong, abort
+    echo "Error building game, aborting"
+    exit 1
+  fi
+  echo "$GAME_NAME was built successfully"
+  printf "\n"
+
+  echo "Finalizing installation"
+  InstallGame "$GAME_NAME"
+  if [ $? -eq 1 ]; then
+    # Something went wrong, abort
+    echo "Error installing game, aborting"
+    exit 1
+  fi
+  printf "\n"
+
+  # Sets the installed status to true for this game
+  # shellcheck disable=SC2094
+  cat <<<"$(jq -r "(.games.nethack_variants[] | select(.name==\"$GAME_NAME\") | .installed) |= true" "$ATH_DIR"/config.json)" >"$ATH_DIR"/config.json
+
+  echo "$GAME_NAME was installed successfully"
+  printf "\n"
+  # Print 5 dots to indicate that the installation is complete
+  for i in {1..5}; do
+    echo -n "."
+    sleep 1
+  done
+
+  return 0 # Return 1 to indicate that the game was installed
+}
+
+# Displays the menu prompt before installation begins to confirm the user wants to install
+function DisplayInstallGameConfirmationMenu() {
+  local GAME_NAME=$1
+  local HEIGHT=24
+  local WIDTH=80
+  local CHOICE_HEIGHT=18
+
+  dialog --backtitle "$DIALOG_TITLE" --title "$GAME_NAME" --yesno "Would you like to configure the installation before proceeding?" 8 60
+  if [ $? -eq 0 ]; then
+    # Configure the installation
+    echo "Configuration Unimplemented"
+    sleep 5
+  fi
+
+  dialog --backtitle "$DIALOG_TITLE" --title "$GAME_NAME" --yesno "Proceed with installation of $GAME_NAME?" 8 60
+  if [ $? -eq 0 ]; then
+    # Configure the installation
+    echo "Configuration Unimplemented"
+  else
+     return 0 # User chose not to install
+  fi
+  exec 3>&1
+  Installation "$GAME_NAME"
+  exitStatus=$?
+  exec 3>&-
+  if [ "$exitStatus" -eq 0 ]; then
+    dialog --backtitle "$DIALOG_TITLE" --title "$GAME_NAME" --yesno "Installation of $GAME_NAME has been completed, would you like to set up exports for this game?" 8 60
+    if [ $? -eq 0 ]; then
+      # Configure the installation
+      echo "Exports Unimplemented"
+      sleep 5
+    fi
+    return 0
+  else
+    echo "Installation of $GAME_NAME failed, please report the above errors."
+    exit 1
+  fi
+  return 0 # Success
+}
+
+function DisplayInstallGameInformationMenu() {
   local GAME_NAME="$1"
   local HEIGHT=24
   local WIDTH=80
   local CHOICE_HEIGHT=18
 
   local MANAGE_GAME_MENU_TEXT
+
   local GAME_DESCRIPTION
   GAME_DESCRIPTION=$(jq -r ".games.nethack_variants[] | select(.name==\"${GAME_NAME}\") | .description" "$ATH_DIR"/config.json)
   # If GAME_DESCRIPTION is not blank, then add it to MANAGE_GAME_MENU_TEXT
@@ -629,6 +993,7 @@ function DisplayInstallInformationMenu() {
   exec 3>&-
   clear
 
+  # Parse selected option
   for i in "${!MANAGE_GAME_MENU_OPTIONS[@]}"; do
     if [[ "${MANAGE_GAME_MENU_OPTIONS[$i]}" = "${MANAGE_GAME_MENU_CHOICE}" ]]; then
       local OPTION_SELECTION="${MANAGE_GAME_MENU_OPTIONS[$i + 1]}"
@@ -638,7 +1003,7 @@ function DisplayInstallInformationMenu() {
         local WEBSITE_URL
         WEBSITE_URL="${OPTION_SELECTION#*website }"
         $URL_OPENER "$WEBSITE_URL"
-        DisplayInstallInformationMenu "$GAME_NAME"
+        DisplayInstallGameInformationMenu "$GAME_NAME"
         exitStatus=$?
       # If option selection begins with "wiki", then it is the wiki entry option
       elif [[ "$OPTION_SELECTION" = "wiki"* ]]; then
@@ -646,7 +1011,7 @@ function DisplayInstallInformationMenu() {
         local WIKI_URL
         WIKI_URL="${OPTION_SELECTION#*wiki }"
         $URL_OPENER "$WIKI_URL"
-        DisplayInstallInformationMenu "$GAME_NAME"
+        DisplayInstallGameInformationMenu "$GAME_NAME"
         exitStatus=$?
       # If option selection begins with "maintainer", then it is the maintainer option
       elif [[ "$OPTION_SELECTION" = "maintainer"* ]]; then
@@ -654,7 +1019,7 @@ function DisplayInstallInformationMenu() {
         local MAINTAINER_URL
         MAINTAINER_URL="${OPTION_SELECTION#*maintainer }"
         $URL_OPENER "$MAINTAINER_URL"
-        DisplayInstallInformationMenu "$GAME_NAME"
+        DisplayInstallGameInformationMenu "$GAME_NAME"
         exitStatus=$?
       # If option selection begins with "github", then it is the github option
       elif [[ "$OPTION_SELECTION" = "github"* ]]; then
@@ -662,11 +1027,28 @@ function DisplayInstallInformationMenu() {
         # Remove "github" from the selection
         GITHUB_URL="${OPTION_SELECTION#*github }"
         $URL_OPENER "$GITHUB_URL"
-        DisplayInstallInformationMenu "$GAME_NAME"
+        DisplayInstallGameInformationMenu "$GAME_NAME"
         exitStatus=$?
       # If option selection begins with "install", then it is the install option
       elif [[ "$OPTION_SELECTION" = "Install"* ]]; then
-        echo "Install Unimplemented"
+        # Check to see if an installation method is available for our platform
+        local VALID_INSTALL_PLATFORM
+        VALID_INSTALL_PLATFORM=$(jq -r ".games.nethack_variants[] | select(.name==\"$GAME_NAME\") | .install_command_$PLATFORM" <"$ATH_DIR"/config.json)
+        # If VALID_INSTALL_PLATFORM is not blank or equal to the word null, then we can install the game
+        if [ -n "$VALID_INSTALL_PLATFORM" ] && [ "$VALID_INSTALL_PLATFORM" != "null" ]; then
+          # If an installation method is available, then install the game
+          DisplayInstallGameConfirmationMenu "$GAME_NAME"
+          local res=$?
+          if [ "$res" -eq 0 ]; then
+            DisplayInstallGameInformationMenu "$GAME_NAME"
+          fi
+          exitStatus=$res
+        else
+          # If an installation method is not available, then display an error message
+          DisplayErrorMessage "No installation method available for your platform."
+          DisplayInstallGameInformationMenu "$GAME_NAME"
+          exitStatus=$?
+        fi
       # If option selection begins with "update", then it is the update option
       elif [[ "$OPTION_SELECTION" = "Update"* ]]; then
         echo "Update Unimplemented"
@@ -702,7 +1084,7 @@ function DisplayNethackInstallManagementMenu() {
     ((j++))
     INSTALL_MANAGEMENT_OPTIONS[($i + 1)]=$line
     ((i = (i + 2)))
-  done < <(jq -r '.games.nethack_variants[].name' < "$ATH_DIR/config.json")
+  done < <(jq -r '.games.nethack_variants[].name' <"$ATH_DIR/config.json")
 
   exec 3>&1
   local INSTALL_MANAGEMENT_CHOICE
@@ -721,12 +1103,8 @@ function DisplayNethackInstallManagementMenu() {
   for i in "${!INSTALL_MANAGEMENT_OPTIONS[@]}"; do
     if [[ "${INSTALL_MANAGEMENT_OPTIONS[$i]}" = "${INSTALL_MANAGEMENT_CHOICE}" ]]; then
       local GAME_NAME="${INSTALL_MANAGEMENT_OPTIONS[$i + 1]}"
-      DisplayInstallInformationMenu "$GAME_NAME"
-      local res=$?
-      if [ "$res" -eq 1 ]; then
-        DisplayNethackInstallManagementMenu
-        exitStatus=$?
-      fi
+      DisplayInstallGameInformationMenu "$GAME_NAME"
+      DisplayNethackInstallManagementMenu
     fi
   done
 

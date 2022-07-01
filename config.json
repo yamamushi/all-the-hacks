@@ -227,14 +227,15 @@
         "games_install_dir": "nethack-3.7-dir",
         "patch_names_linux": [],
         "build_steps_linux": [],
+        "install_command_linux": "",
         "path_linux": "",
-        "patch_names_mac0s": [],
-        "build_steps_macos": [
-          "sh sys/unix/setup.sh sys/unix/hints/macos.370",
-          "make",
-          "make install PREFIX=ATH_INSTALL_PATH_VAR WANT_WIN_TTY=1"
+        "patch_names_osx": [],
+        "build_steps_osx": [
+          "sh sys/unix/setup.sh sys/unix/hints/macosx10.14",
+          "make"
         ],
-        "path_macos": "bin/nethack",
+        "install_command_osx": "make install PREFIX=ATH_INSTALL_PATH_VAR WANT_WIN_TTY=1",
+        "path_osx": "bin/nethack",
         "installed": false
       },
       {
@@ -336,17 +337,18 @@
         "development_status": "Actively Developed",
         "patch_names_linux": [],
         "build_steps_linux": [],
+        "install_command_linux": "",
         "path_linux": "",
-        "patch_names_macos": [
+        "patch_names_osx": [
           "slex_preserve_lock.patch",
           "slex_makefile.patch"
         ],
-        "build_steps_macos": [
+        "build_steps_osx": [
           "sh sys/unix/setup.sh",
-          "make",
-          "make install PREFIX=ATH_INSTALL_PATH_VAR WANT_WIN_TTY=1"
+          "make"
         ],
-        "path_macos": "local/bin/slex",
+        "install_command_osx": "make install PREFIX=ATH_INSTALL_PATH_VAR WANT_WIN_TTY=1 GAMEGRP=staff GAMEUID=ATH_USER_NAME_VAR",
+        "path_osx": "local/bin/slex",
         "installed": false
       },
       {

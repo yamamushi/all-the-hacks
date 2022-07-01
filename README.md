@@ -12,10 +12,12 @@ Follow the prompts, and you'll be ready to go.
 
 The ath script can be run from anywhere, and will install all the necessary dependencies.
 
+In addition, for certain platforms and builds, a patch set is provided in this repository for building them successfully. OSX builds are more likely to require a patch.
+
 # Todo 
 
-* Parsing build_steps by OS and arch
-* Add nethack variant patching based on host type
+* [done] Parsing build_steps by OS
+* [done] Add nethack variant patching based on host type
+* [done] Add nethack variant build and installation to the ath directory
 * Add nethack variant build configuration options
-* Add nethack variant build and installation to the ath directory
 * Add nethack variant exports to current shell configuration
