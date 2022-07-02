@@ -498,6 +498,7 @@ function DisplayNethackRemotePlayMenu() {
   return $exitStatus
 }
 
+# Escapes the name of the game into a shell-friendly format, used by anything that is writing
 function EscapedGameName() {
   local GAME_NAME=$1
   # Change to the build directory and run the build steps
@@ -510,6 +511,7 @@ function EscapedGameName() {
   echo "$ESCAPED_GAME_NAME"
 }
 
+# Installs the provided game name into the games directory
 function InstallGame(){
   local GAME_NAME=$1
 
@@ -544,6 +546,7 @@ function InstallGame(){
   return 0
 }
 
+# Builds the game, but does not install it
 function BuildGame() {
   local GAME_NAME=$1
   # Get a list of all of the build steps for this game
@@ -594,6 +597,7 @@ function BuildGame() {
   return 0 # Return 0 if build was successful
 }
 
+# Lists all of the patches for a given game name, and installs them after prompting the user to continue or not
 function SetupGamePatches() {
   local GAME_NAME=$1
   # Get list of patches to apply from the config file using read line
@@ -657,6 +661,32 @@ function SetupGamePatches() {
   return 0 # Success
 }
 
+# Cleans the git repo for a provided game name
+function CleanRepo(){
+  GAME_NAME=$1
+
+  local ESCAPED_GAME_NAME
+  ESCAPED_GAME_NAME=$(EscapedGameName "$GAME_NAME")
+  local LOCAL_REPO_PATH="$ATH_DIR/repos/$ESCAPED_GAME_NAME"
+
+  echo "Cleaning repository"
+  cd "$LOCAL_REPO_PATH" || exit
+  git clean -fdx
+  if [ $? -eq 1 ]; then
+    # Something went wrong, abort
+    echo "Error on 'git clean -fdx'"
+    return 1 # Abort
+  fi
+  git checkout .
+  if [ $? -eq 1 ]; then
+    # Something went wrong, abort
+    echo "Error checking out 'git checkout .'"
+    return 1 # Abort
+  fi
+  return 0 # Success
+}
+
+# Takes a game name argument and clones it into the repos directory
 function GitCloneGame() {
   local GAME_NAME=$1
   # Check for repos directory, if it doesn't exist, create it
@@ -723,32 +753,24 @@ function GitCloneGame() {
     fi
   else
     # Clean the repository, so we can patch and build it again
-    echo "Cleaning repository"
-    cd "$LOCAL_REPO_PATH" || exit
-    git clean -fdx
+    CleanRepo "$GAME_NAME"
     if [ $? -eq 1 ]; then
       # Something went wrong, abort
-      echo "Error cleaning repository"
-      return 1 # Abort
-    fi
-    git checkout .
-    if [ $? -eq 1 ]; then
-      # Something went wrong, abort
-      echo "Error checking out ."
-      return 1 # Abort
+      echo "CleanRepo error, aborting program."
+      exit 1 # Abort
     fi
   fi
-
-
   return 0 # Success
 }
 
+# Displays an error message through dialog and returns 0 for success - always
 function DisplayErrorMessage() {
   local MESSAGE=$1
   dialog --backtitle "$DIALOG_TITLE" --title "Error" --msgbox "$MESSAGE" 8 60
   return 0 # Success
 }
 
+# Manages all the installation steps for a game
 function Installation() {
   local GAME_NAME=$1
   # Check to see if installed is true in the config file for this game
@@ -862,6 +884,7 @@ function DisplayInstallGameConfirmationMenu() {
   return 0 # Success
 }
 
+# Displays a list of information about the game, including installation, updating, etc.
 function DisplayInstallGameInformationMenu() {
   local GAME_NAME="$1"
   local HEIGHT=24
@@ -1111,6 +1134,7 @@ function DisplayNethackInstallManagementMenu() {
   return $exitStatus
 }
 
+# Displays the main menu
 function DisplayMainMenu() {
   local HEIGHT=11
   local WIDTH=40
